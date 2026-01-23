@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js"; 
+import User from "../models/User.js";
 
 const protect = async (req, res, next) => {
   let token;
@@ -12,20 +12,21 @@ const protect = async (req, res, next) => {
 
       const userIdFromToken = decoded.user?.id;
       if (!userIdFromToken) {
-        return res.status(401).json({ msg: "Not authorized, token payload invalid" });
+        return res
+          .status(401)
+          .json({ msg: "Not authorized, token payload invalid" });
       }
 
-      req.user = await User.findById(userIdFromToken).select("-password"); 
+      req.user = await User.findById(userIdFromToken).select("-password");
 
       if (!req.user) {
-         return res.status(401).json({ msg: "Not authorized, user not found" });
+        return res.status(401).json({ msg: "Not authorized, user not found" });
       }
 
       return next();
-
     } catch (err) {
-      if (err.name === 'TokenExpiredError') {
-          return res.status(401).json({ msg: "Not authorized, token expired" });
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ msg: "Not authorized, token expired" });
       }
       return res.status(401).json({ msg: "Not authorized, token failed" });
     }
