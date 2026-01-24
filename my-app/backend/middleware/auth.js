@@ -1,40 +1,42 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import Admin from "../models/Admin.js";
 
 const protect = async (req, res, next) => {
   let token;
-  const authHeader = req.headers.authorization;
 
-  if (authHeader?.startsWith("Bearer ")) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
     try {
-      token = authHeader.split(" ")[1];
+      token = req.headers.authorization.split(" ")[1];
+
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      const userIdFromToken = decoded.user?.id;
-      if (!userIdFromToken) {
-        return res
-          .status(401)
-          .json({ msg: "Not authorized, token payload invalid" });
+      // 👤 USER TOKEN
+      if (decoded.user) {
+        req.user = await User.findById(decoded.user.id).select("-password");
+        req.role = "user";
       }
 
-      req.user = await User.findById(userIdFromToken).select("-password");
-
-      if (!req.user) {
-        return res.status(401).json({ msg: "Not authorized, user not found" });
+      // 👨‍💼 ADMIN TOKEN
+      if (decoded.admin) {
+        req.admin = await Admin.findById(decoded.admin.id).select("-password");
+        req.role = "admin";
       }
 
-      return next();
-    } catch (err) {
-      if (err.name === "TokenExpiredError") {
-        return res.status(401).json({ msg: "Not authorized, token expired" });
+      if (!req.user && !req.admin) {
+        return res.status(401).json({ msg: "Invalid token" });
       }
-      return res.status(401).json({ msg: "Not authorized, token failed" });
+
+      next();
+    } catch (error) {
+      console.error("Auth middleware error:", error);
+      return res.status(401).json({ msg: "Token failed" });
     }
-  }
-
-  if (!token) {
-    // Added return here to prevent execution leak
-    return res.status(401).json({ msg: "Not authorized, no token" });
+  } else {
+    return res.status(401).json({ msg: "No token provided" });
   }
 };
 
