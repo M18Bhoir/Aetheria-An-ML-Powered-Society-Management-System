@@ -21,9 +21,9 @@ const Login = () => {
 
     try {
       const payload = {
-        adminId: loginType === "admin" ? userId.trim() : undefined,
-        userId: loginType === "user" ? userId.trim() : undefined,
+        userId: userId.trim(), // ALWAYS userId
         password: password.trim(),
+        role: loginType, // "admin" or "user"
       };
 
       const res = await api.post("/api/auth/login", payload);

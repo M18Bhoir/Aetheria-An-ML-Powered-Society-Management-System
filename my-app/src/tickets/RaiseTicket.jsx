@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 export default function RaiseTicket() {
   const [formData, setFormData] = useState({
@@ -16,7 +16,7 @@ export default function RaiseTicket() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("/api/tickets/create", formData);
+      await api.post("/api/tickets", formData);
       alert("Ticket created successfully!");
       setFormData({
         title: "",

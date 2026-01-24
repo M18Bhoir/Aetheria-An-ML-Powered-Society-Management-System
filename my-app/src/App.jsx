@@ -8,7 +8,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-// --- Admin Imports ---
+/* ================= ADMIN IMPORTS ================= */
 import AdminDashboard from "./Dashboard/admin-dashboard";
 import AdminHome from "./Dashboard/AdminHome";
 import CreateDues from "./Dashboard/AdminViews/CreateDues";
@@ -22,15 +22,17 @@ import ManagePolls from "./Dashboard/AdminViews/ManagePolls";
 import CreatePoll from "./Voting_System/CreatePoll";
 import ExpenseLogger from "./Dashboard/AdminViews/ExpenseLogger";
 import ManageRentals from "./Dashboard/AdminViews/ManageRentals";
-import AssignTickets from "./admin/tickets/Assigntickets";
-import SLAAlerts from "./admin/tickets/SLAAlerts";
-import TicketOverview from "./admin/tickets/TicketOverview";
-import TicketReports from "./admin/tickets/TicketsReport";
 
-// --- User Imports ---
+/* 🎫 ADMIN TICKETS — FIXED PATHS */
+import TicketOverview from "./admin/tickets/TicketOverview.jsx";
+import AssignTickets from "./admin/tickets/Assigntickets.jsx"; // Ensure 't' is lowercase if the file is 'Assigntickets'
+import SLAAlerts from "./admin/tickets/SLAAlerts.jsx";
+import TicketReports from "./admin/tickets/TicketsReport.jsx"; // Check if the file is 'TicketsReport' or 'TicketReports'
+
+/* ================= USER IMPORTS ================= */
 import UserLayout from "./UserDashBoard/UserLayout";
 import UserDashboard from "./UserDashBoard/User_Dashboard";
-import MLPrediction from "./ML/PredictionCard"; // ✅ PAGE COMPONENT
+import MLPrediction from "./ML/PredictionCard";
 import LandingPage from "./LandingPage/LandingPage";
 import Login from "./LoginSignUp/Login";
 import Signup from "./LoginSignUp/SignUp";
@@ -44,6 +46,8 @@ import CreateMarketplaceItem from "./Marketplace/MarketplaceItem";
 import MyListings from "./Marketplace/MyListings";
 import RequestGuestPass from "./Booking/RequestGuestPass";
 import MyGuestPasses from "./Booking/MyGuestPasses";
+
+/* 🎫 USER TICKETS */
 import MyTickets from "./tickets/MyTickets";
 import RaiseTicket from "./tickets/RaiseTicket";
 import TicketComments from "./tickets/TicketComments";
@@ -51,15 +55,13 @@ import TrackTicket from "./tickets/TrackTickets";
 
 import "./index.css";
 
-// --- Protected Route ---
+/* ================= PROTECTED ROUTE ================= */
 function ProtectedRoute() {
   const token = localStorage.getItem("token");
   const isAdmin = localStorage.getItem("admin");
   const isUser = localStorage.getItem("user");
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!token) return <Navigate to="/login" replace />;
 
   const pathname = window.location.pathname;
 
@@ -74,33 +76,29 @@ function ProtectedRoute() {
   return <Outlet />;
 }
 
-// --- Main App Component ---
+/* ================= MAIN APP ================= */
 function App() {
   return (
     <Router>
       <Routes>
-        {/* ===== Public Routes ===== */}
+        {/* ===== PUBLIC ===== */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* ===== Protected Routes ===== */}
+        {/* ===== PROTECTED ===== */}
         <Route element={<ProtectedRoute />}>
-          {/* ===== User Dashboard Routes ===== */}
+          {/* ===== USER DASHBOARD ===== */}
           <Route path="/dashboard" element={<UserLayout />}>
             <Route index element={<UserDashboard />} />
             <Route path="profile" element={<Profile />} />
             <Route path="ml-prediction" element={<MLPrediction />} />
-
             <Route path="voting" element={<PollList />} />
             <Route path="poll/:id" element={<PollDetail />} />
-
             <Route path="booking" element={<AmenityBooking />} />
             <Route path="my-bookings" element={<MyBookings />} />
-
             <Route path="request-guest-pass" element={<RequestGuestPass />} />
             <Route path="my-guest-passes" element={<MyGuestPasses />} />
-
             <Route path="marketplace" element={<MarketplaceList />} />
             <Route path="marketplace/new" element={<CreateMarketplaceItem />} />
             <Route
@@ -109,7 +107,7 @@ function App() {
             />
             <Route path="my-listings" element={<MyListings />} />
 
-            {/* 🎫 Ticket System */}
+            {/* 🎫 USER TICKETS */}
             <Route path="tickets">
               <Route index element={<MyTickets />} />
               <Route path="new" element={<RaiseTicket />} />
@@ -118,7 +116,7 @@ function App() {
             </Route>
           </Route>
 
-          {/* ===== Admin Routes ===== */}
+          {/* ===== ADMIN DASHBOARD ===== */}
           <Route path="/admin" element={<AdminDashboard />}>
             <Route index element={<AdminHome />} />
             <Route path="residents" element={<ResidentList />} />
@@ -133,6 +131,8 @@ function App() {
             <Route path="poll/:id" element={<PollDetail />} />
             <Route path="expense-logger" element={<ExpenseLogger />} />
             <Route path="manage-rentals" element={<ManageRentals />} />
+
+            {/* 🎫 ADMIN TICKETS */}
             <Route path="tickets/overview" element={<TicketOverview />} />
             <Route path="tickets/assign" element={<AssignTickets />} />
             <Route path="tickets/sla-alerts" element={<SLAAlerts />} />
@@ -140,7 +140,7 @@ function App() {
           </Route>
         </Route>
 
-        {/* ===== 404 Route ===== */}
+        {/* ===== 404 ===== */}
         <Route
           path="*"
           element={
