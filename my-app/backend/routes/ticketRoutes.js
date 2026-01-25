@@ -119,4 +119,21 @@ router.get("/:id", protect, async (req, res) => {
   }
 });
 
+// routes/ticketRoutes.js
+router.get("/:id/otp", protect, async (req, res) => {
+  const ticket = await Ticket.findById(req.params.id);
+
+  if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
+
+  if (ticket.createdBy.toString() !== req.user.id) {
+    return res.status(403).json({ msg: "Unauthorized" });
+  }
+
+  if (!ticket.otp || ticket.otpExpiresAt < Date.now()) {
+    return res.status(400).json({ msg: "OTP not available or expired" });
+  }
+
+  res.json({ otp: ticket.otp });
+});
+
 export default router;

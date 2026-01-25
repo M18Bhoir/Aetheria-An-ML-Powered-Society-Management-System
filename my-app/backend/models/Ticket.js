@@ -44,7 +44,7 @@ const ticketSchema = new mongoose.Schema(
 
     slaHours: {
       type: Number,
-      default: 72, // default SLA
+      default: 72,
     },
 
     slaDueAt: {
@@ -54,13 +54,33 @@ const ticketSchema = new mongoose.Schema(
     resolvedAt: {
       type: Date,
     },
+
+    closedAt: {
+      type: Date,
+    },
+
+    // 🔐 OTP fields
+    otp: {
+      type: String,
+    },
+
+    otpExpiresAt: {
+      type: Date,
+    },
+
+    otpVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true },
+  {
+    timestamps: true,
+  },
 );
 
 /* 🔥 SLA auto-calculation */
 ticketSchema.pre("save", function (next) {
-  if (!this.slaDueAt) {
+  if (!this.slaDueAt && this.createdAt) {
     this.slaDueAt = new Date(
       this.createdAt.getTime() + this.slaHours * 60 * 60 * 1000,
     );

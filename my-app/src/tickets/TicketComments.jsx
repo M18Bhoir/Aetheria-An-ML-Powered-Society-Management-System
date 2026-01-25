@@ -7,7 +7,7 @@ export default function TicketComments({ ticketId }) {
   const addComment = async () => {
     await axios.post(`/api/tickets/comment`, {
       ticketId,
-      message: comment
+      message: comment,
     });
     setComment("");
     alert("Comment added");
@@ -28,13 +28,23 @@ export default function TicketComments({ ticketId }) {
       />
 
       <div className="flex gap-3 mt-2">
-        <button onClick={addComment} className="bg-blue-500 text-white px-3 py-1 rounded">
+        <button
+          onClick={addComment}
+          className="bg-blue-500 text-white px-3 py-1 rounded"
+        >
           Comment
         </button>
-
-        <button onClick={reopenTicket} className="bg-red-500 text-white px-3 py-1 rounded">
+        <button
+          onClick={reopenTicket}
+          className="bg-red-500 text-white px-3 py-1 rounded"
+        >
           Reopen Ticket
         </button>
+        <p className="text-yellow-400">
+          {" "}
+          Share this OTP with admin to close ticket:{" "}
+        </p>{" "}
+        <h2 className="text-3xl font-bold">{otp}</h2>
       </div>
     </div>
   );
