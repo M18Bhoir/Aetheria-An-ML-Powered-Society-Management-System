@@ -1,4 +1,5 @@
 import express from "express";
+import axios from "axios";
 import adminAuth from "../middleware/adminAuth.js";
 import Billing from "../models/Billing.js";
 import Complaint from "../models/Complaint.js";
@@ -49,6 +50,67 @@ router.get("/maintenance-collection", adminAuth, async (req, res) => {
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch maintenance analytics" });
+  }
+});
+
+/* ============================
+   🤖 Maintenance Prediction (ML)
+   ============================ */
+router.get("/maintenance-prediction", adminAuth, async (req, res) => {
+  try {
+    // 1️⃣ Fetch historical maintenance data
+    const historicalData = await Billing.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m", date: "$paymentDate" },
+          },
+          totalCollected: { $sum: "$amountPaid" },
+          totalDue: { $sum: "$amount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id",
+          collectionRate: {
+            $cond: [
+              { $eq: ["$totalDue", 0] },
+              0,
+              {
+                $round: [
+                  {
+                    $multiply: [
+                      { $divide: ["$totalCollected", "$totalDue"] },
+                      100,
+                    ],
+                  },
+                  2,
+                ],
+              },
+            ],
+          },
+        },
+      },
+      { $sort: { month: 1 } },
+    ]);
+
+    // 2️⃣ Send data to Python ML service
+    const prediction = await axios.post(
+      "http://localhost:8000/predict-maintenance",
+      historicalData,
+    );
+
+    // 3️⃣ Return combined result
+    res.status(200).json({
+      actual: historicalData,
+      predicted: prediction.data,
+    });
+  } catch (error) {
+    console.error("Maintenance prediction error:", error.message);
+    res.status(500).json({
+      message: "Failed to generate maintenance prediction",
+    });
   }
 });
 

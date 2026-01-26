@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import PredictionCard from "../ML/PredictionCard";
 import {
   DollarSign,
   CheckCircle,
@@ -95,11 +94,6 @@ function User_Dashboard() {
     inProgress: 0,
   });
 
-  /* 🔮 ML STATES */
-  const [prediction, setPrediction] = useState(null);
-  const [predictionLoading, setPredictionLoading] = useState(true);
-  const [predictionError, setPredictionError] = useState(null);
-
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUserData(JSON.parse(storedUser));
@@ -115,36 +109,10 @@ function User_Dashboard() {
         /* --- 🎫 Fetch ticket summary --- */
         const ticketRes = await api.get("/api/tickets/summary");
         setTicketSummary(ticketRes.data);
-
-        /* --- 🔮 ML Prediction --- */
-        const mlPayload = {
-          model: "linear_regression",
-          data: {
-            flat_size: userData.flatSize || 1200,
-            past_dues: duesRes.data.dues?.amount || 1500,
-            delay_days: duesRes.data.dues?.delayDays || 10,
-          },
-        };
-
-        const predRes = await api.post("/api/ml/predict", mlPayload);
-        const predictedAmount = predRes.data.prediction;
-
-        setPrediction({
-          predicted_amount: predictedAmount,
-          risk_level:
-            predictedAmount > 3000
-              ? "High"
-              : predictedAmount > 2000
-                ? "Medium"
-                : "Low",
-          confidence: 0.85,
-        });
       } catch (err) {
         console.error(err);
-        setPredictionError("Unable to load AI prediction");
       } finally {
         setIsLoading(false);
-        setPredictionLoading(false);
       }
     };
 
@@ -206,8 +174,6 @@ function User_Dashboard() {
       icon: <User />,
       path: "/dashboard/profile",
     },
-
-    /* 🎫 Ticket System */
     {
       title: "Raise Ticket",
       description: "Report an issue",
@@ -262,21 +228,7 @@ function User_Dashboard() {
         </div>
 
         {/* Notices */}
-        <div className="lg:col-span-1">
-          <UserNoticeBoard />
-        </div>
-      </div>
-
-      {/* -------- AI INSIGHTS -------- */}
-      <h2 className="text-2xl font-semibold mb-4">AI Insights</h2>
-      <div className="mb-8 max-w-md">
-        {predictionLoading && (
-          <p className="text-gray-300">Loading AI prediction...</p>
-        )}
-        {predictionError && <p className="text-red-400">{predictionError}</p>}
-        {!predictionLoading && prediction && (
-          <PredictionCard prediction={prediction} />
-        )}
+        <UserNoticeBoard />
       </div>
 
       <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>

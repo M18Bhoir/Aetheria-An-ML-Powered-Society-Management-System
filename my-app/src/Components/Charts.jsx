@@ -1,153 +1,192 @@
 import {
-  LineChart as ReLineChart,
+  LineChart,
   Line,
-  BarChart as ReBarChart,
+  BarChart,
   Bar,
-  PieChart as RePieChart,
-  Pie,
-  Cell,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
-  Tooltip,
   CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
-  Legend,
+  Label,
+  LabelList,
 } from "recharts";
 
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+/* ================= HELPERS ================= */
 
-/* ===============================
-   PDF EXPORT UTILITY
-   =============================== */
-const exportChartToPDF = async (id, title) => {
-  const element = document.getElementById(id);
-  const canvas = await html2canvas(element);
-  const imgData = canvas.toDataURL("image/png");
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
-  const pdf = new jsPDF("landscape");
-  pdf.text(title, 10, 10);
-  pdf.addImage(imgData, "PNG", 10, 20, 270, 150);
-  pdf.save(`${title}.pdf`);
+const formatXAxis = (value, xAxis) => {
+  if (xAxis === "month") return MONTHS[value - 1] || value;
+  return value;
 };
 
-/* ===============================
-   LINE CHART
-   =============================== */
-export function LineChartComponent({
-  id,
-  data,
-  xKey,
-  yKey,
-  title,
-  yDomain = [0, 100],
-}) {
+const formatValue = (value, dataKey) => {
+  if (dataKey.toLowerCase().includes("rate")) return `${value}%`;
+  return value;
+};
+
+/* ================= TOOLTIP ================= */
+
+const CustomTooltip = ({ active, payload, label, xAxis, dataKey }) => {
+  if (!active || !payload?.length) return null;
+
   return (
-    <div id={id} className="bg-gray-800 text-white p-4 rounded relative">
-      <button
-        onClick={() => exportChartToPDF(id, title)}
-        className="absolute top-2 right-2 text-sm bg-blue-600 px-2 py-1 rounded"
-      >
-        Export PDF
-      </button>
-
-      <h3 className="mb-3 font-semibold">{title}</h3>
-
-      <ResponsiveContainer width="100%" height={250}>
-        <ReLineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xKey} />
-          <YAxis domain={yDomain} />
-          <Tooltip />
-          <Line type="monotone" dataKey={yKey} strokeWidth={3} />
-        </ReLineChart>
-      </ResponsiveContainer>
+    <div className="bg-gray-900 text-white p-2 rounded text-sm">
+      <p className="font-semibold">{formatXAxis(label, xAxis)}</p>
+      <p>
+        {dataKey}: {formatValue(payload[0].value, dataKey)}
+      </p>
     </div>
   );
-}
+};
 
-/* ===============================
-   BAR CHART
-   =============================== */
-export function BarChartComponent({ id, data, xKey, yKey, title }) {
-  return (
-    <div id={id} className="bg-gray-800 text-white p-4 rounded relative">
-      <button
-        onClick={() => exportChartToPDF(id, title)}
-        className="absolute top-2 right-2 text-sm bg-green-600 px-2 py-1 rounded"
-      >
-        Export PDF
-      </button>
+/* ================= MAIN COMPONENT ================= */
 
-      <h3 className="mb-3 font-semibold">{title}</h3>
-
-      <ResponsiveContainer width="100%" height={250}>
-        <ReBarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xKey} />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey={yKey} radius={[6, 6, 0, 0]} />
-        </ReBarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-/* ===============================
-   PIE CHART
-   =============================== */
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#d84d8b"];
-
-export default function PieChartComponent({
-  id,
+export default function Chart({
   data = [],
-  nameKey,
-  valueKey,
-  title,
+  type,
+  dataKey,
+  xAxis,
+  showLabels = true, // 🔥 toggle labels
 }) {
-  const hasData = Array.isArray(data) && data.length > 0;
+  if (!data.length) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-400">
+        No data available
+      </div>
+    );
+  }
+
+  const commonProps = {
+    data,
+    margin: { top: 20, right: 30, left: 20, bottom: 50 },
+  };
 
   return (
-    <div
-      id={id}
-      className="bg-gray-800 text-white p-4 rounded relative min-h-[320px]"
-    >
-      <button
-        onClick={() => exportChartToPDF(id, title)}
-        className="absolute top-2 right-2 text-sm bg-purple-600 px-2 py-1 rounded"
-      >
-        Export PDF
-      </button>
+    <ResponsiveContainer width="100%" height="100%">
+      {type === "line" && (
+        <LineChart {...commonProps}>
+          <CartesianGrid strokeDasharray="3 3" />
 
-      <h3 className="mb-3 font-semibold">{title}</h3>
+          <XAxis
+            dataKey={xAxis}
+            tickFormatter={(v) => formatXAxis(v, xAxis)}
+            angle={data.length > 6 ? -30 : 0}
+            textAnchor="end"
+          >
+            <Label value={xAxis.toUpperCase()} position="bottom" />
+          </XAxis>
 
-      {!hasData ? (
-        <div className="flex items-center justify-center h-[250px] text-gray-400">
-          No data available
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height={250}>
-          <RePieChart>
-            <Pie
-              data={data}
-              dataKey={valueKey}
-              nameKey={nameKey}
-              outerRadius={90}
-              label
-            >
-              {data.map((_, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </RePieChart>
-        </ResponsiveContainer>
+          <YAxis tickFormatter={(v) => formatValue(v, dataKey)}>
+            <Label
+              value={dataKey.toUpperCase()}
+              angle={-90}
+              position="insideLeft"
+            />
+          </YAxis>
+
+          <Tooltip
+            content={<CustomTooltip xAxis={xAxis} dataKey={dataKey} />}
+          />
+
+          <Line
+            type="monotone"
+            dataKey={dataKey}
+            stroke="#8884d8"
+            strokeWidth={2}
+          >
+            {showLabels && (
+              <LabelList
+                dataKey={dataKey}
+                position="top"
+                formatter={(v) => formatValue(v, dataKey)}
+              />
+            )}
+          </Line>
+        </LineChart>
       )}
-    </div>
+
+      {type === "bar" && (
+        <BarChart {...commonProps}>
+          <CartesianGrid strokeDasharray="3 3" />
+
+          <XAxis
+            dataKey={xAxis}
+            angle={data.length > 6 ? -30 : 0}
+            textAnchor="end"
+          >
+            <Label value={xAxis.toUpperCase()} position="bottom" />
+          </XAxis>
+
+          <YAxis>
+            <Label
+              value={dataKey.toUpperCase()}
+              angle={-90}
+              position="insideLeft"
+            />
+          </YAxis>
+
+          <Tooltip
+            content={<CustomTooltip xAxis={xAxis} dataKey={dataKey} />}
+          />
+
+          <Bar dataKey={dataKey} fill="#82ca9d">
+            {showLabels && <LabelList dataKey={dataKey} position="top" />}
+          </Bar>
+        </BarChart>
+      )}
+
+      {type === "area" && (
+        <AreaChart {...commonProps}>
+          <CartesianGrid strokeDasharray="3 3" />
+
+          <XAxis
+            dataKey={xAxis}
+            angle={data.length > 6 ? -30 : 0}
+            textAnchor="end"
+          >
+            <Label value={xAxis.toUpperCase()} position="bottom" />
+          </XAxis>
+
+          <YAxis>
+            <Label
+              value={dataKey.toUpperCase()}
+              angle={-90}
+              position="insideLeft"
+            />
+          </YAxis>
+
+          <Tooltip
+            content={<CustomTooltip xAxis={xAxis} dataKey={dataKey} />}
+          />
+
+          <Area
+            type="monotone"
+            dataKey={dataKey}
+            stroke="#ffc658"
+            fill="#ffc658"
+            fillOpacity={0.6}
+          >
+            {showLabels && <LabelList dataKey={dataKey} position="top" />}
+          </Area>
+        </AreaChart>
+      )}
+    </ResponsiveContainer>
   );
 }

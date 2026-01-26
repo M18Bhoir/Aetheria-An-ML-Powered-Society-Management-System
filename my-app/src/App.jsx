@@ -35,7 +35,6 @@ import AdminAnalyticsDashboard from "./pages/AnalyticsDashboard.jsx";
 /* ================= USER IMPORTS ================= */
 import UserLayout from "./UserDashBoard/UserLayout";
 import UserDashboard from "./UserDashBoard/User_Dashboard";
-import MLPrediction from "./ML/PredictionCard";
 import LandingPage from "./LandingPage/LandingPage";
 import Login from "./LoginSignUp/Login";
 import Signup from "./LoginSignUp/SignUp";
@@ -95,7 +94,6 @@ function App() {
           <Route path="/dashboard" element={<UserLayout />}>
             <Route index element={<UserDashboard />} />
             <Route path="profile" element={<Profile />} />
-            <Route path="ml-prediction" element={<MLPrediction />} />
             <Route path="voting" element={<PollList />} />
             <Route path="poll/:id" element={<PollDetail />} />
             <Route path="booking" element={<AmenityBooking />} />
