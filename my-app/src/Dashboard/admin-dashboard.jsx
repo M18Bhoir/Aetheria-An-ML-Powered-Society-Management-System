@@ -15,12 +15,10 @@ import {
   Vote,
   FileText,
   Briefcase,
-
-  // 🎫 Ticket Icons
+  BarChart3, // Import the Analytics icon
   Ticket,
   UserCheck,
   ClockAlert,
-  BarChart3,
 } from "lucide-react";
 
 /* ================= Sidebar ================= */
@@ -80,7 +78,12 @@ const Sidebar = () => {
       icon: <Briefcase size={20} />,
       path: "/admin/manage-rentals",
     },
-
+    /* 📊 ADDED ANALYTICS */
+    {
+      name: "Analytics",
+      icon: <BarChart3 size={20} />,
+      path: "/admin/analytics",
+    },
     /* ================= 🎫 TICKET SYSTEM ================= */
     {
       name: "Ticket Overview",
@@ -130,7 +133,6 @@ const Sidebar = () => {
         bg-gray-900 text-gray-200 shadow-lg
         transition-all duration-300 h-screen flex flex-col`}
     >
-      {/* ===== Header ===== */}
       <div className="flex items-center justify-between p-4 h-16 border-b border-gray-700">
         {isOpen && <div className="text-xl font-bold text-white">🏢 Admin</div>}
         <button
@@ -141,14 +143,12 @@ const Sidebar = () => {
         </button>
       </div>
 
-      {/* ===== Navigation ===== */}
       <nav className="flex-1 space-y-2 p-3 overflow-y-auto">
         {menu.map((item) => (
           <NavItem key={item.name} item={item} />
         ))}
       </nav>
 
-      {/* ===== Logout ===== */}
       <div className="p-3 border-t border-gray-700">
         <button
           onClick={handleLogout}
@@ -165,7 +165,6 @@ const Sidebar = () => {
   );
 };
 
-/* ================= Main Admin Dashboard ================= */
 function AdminDashboard() {
   return (
     <div className="flex h-screen bg-gray-900 text-white">

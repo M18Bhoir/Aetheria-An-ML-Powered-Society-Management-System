@@ -4,9 +4,6 @@ import Complaint from "../models/Complaint.js";
 import Booking from "../models/Booking.js";
 import Visitor from "../models/Visitor.js";
 
-mongoose.connect("mongodb://127.0.0.1:27017/societyDB");
-console.log("✅ MongoDB connected");
-
 const randomDate = (start, end) =>
   new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 
@@ -15,14 +12,17 @@ const amenities = ["Gym", "Swimming Pool", "Club House"];
 
 async function seedData() {
   try {
-    await Billing.deleteMany();
-    await Complaint.deleteMany();
-    await Booking.deleteMany();
-    await Visitor.deleteMany();
-    await mongoose.connect("mongodb://127.0.0.1:27017/societyDB");
+    /* ================= CONNECT ================= */
+    await mongoose.connect("mongodb://127.0.0.1:27017/society-management");
     console.log("✅ MongoDB connected");
 
-    const dummyUserId = new mongoose.Types.ObjectId();
+    /* ================= CLEAR DATA ================= */
+    await Promise.all([
+      Billing.deleteMany(),
+      Complaint.deleteMany(),
+      Booking.deleteMany(),
+      Visitor.deleteMany(),
+    ]);
 
     /* ================= BILLING ================= */
     const billingData = [];
@@ -51,31 +51,23 @@ async function seedData() {
 
     /* ================= BOOKINGS ================= */
     const bookings = [];
+    const dummyUserId = new mongoose.Types.ObjectId();
 
     for (let i = 0; i < 150; i++) {
       const startTime = new Date(
         2025,
-        Math.floor(Math.random() * 2), // Jan–Feb
+        Math.floor(Math.random() * 2),
         Math.floor(Math.random() * 28) + 1,
         Math.random() > 0.6 ? 18 : Math.floor(Math.random() * 22),
       );
-
-      const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
 
       bookings.push({
         amenityName: amenities[Math.floor(Math.random() * amenities.length)],
         bookedBy: dummyUserId,
         startTime,
-        endTime,
+        endTime: new Date(startTime.getTime() + 60 * 60 * 1000),
       });
     }
-
-    /* ================= INSERT ================= */
-    await Booking.deleteMany();
-    await Booking.insertMany(bookings);
-
-    console.log("✅ Booking data seeded successfully");
-    process.exit();
 
     /* ================= VISITORS ================= */
     const visitorData = [];
@@ -92,15 +84,18 @@ async function seedData() {
       });
     }
 
-    await Billing.insertMany(billingData);
-    await Complaint.insertMany(complaintData);
-    await Booking.insertMany(bookingData);
-    await Visitor.insertMany(visitorData);
+    /* ================= INSERT ================= */
+    await Promise.all([
+      Billing.insertMany(billingData),
+      Complaint.insertMany(complaintData),
+      Booking.insertMany(bookings),
+      Visitor.insertMany(visitorData),
+    ]);
 
     console.log("✅ Database seeded successfully");
-    process.exit();
+    process.exit(0);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Seeding failed:", err);
     process.exit(1);
   }
 }

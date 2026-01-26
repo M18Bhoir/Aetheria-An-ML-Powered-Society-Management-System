@@ -8,18 +8,21 @@ import cors from "cors";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/* ================= ENV CHECK (OPTIONAL) ================= */
-console.log("ENV CHECK");
-console.log("RAZORPAY_KEY_ID =", process.env.RAZORPAY_KEY_ID);
-console.log("RAZORPAY_KEY_SECRET =", process.env.RAZORPAY_KEY_SECRET);
+/* ================= ENV CHECK ================= */
+console.log("Checking Environment Variables...");
+if (!process.env.JWT_SECRET) {
+  console.error("❌ FATAL ERROR: JWT_SECRET is not defined.");
+  process.exit(1);
+}
+console.log("RAZORPAY_KEY_ID =", process.env.RAZORPAY_KEY_ID || "Not Set");
 
-/* ================= DB ================= */
+/* ================= DB CONNECTION ================= */
 import connectDB from "./config/db.js";
 
-/* ================= ROUTES ================= */
+/* ================= ROUTE IMPORTS ================= */
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import adminTicketRoutes from "./routes/adminTicketRoutes.js"; // 🎫 ADDED
+import adminTicketRoutes from "./routes/adminTicketRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -31,6 +34,7 @@ import noticeRoutes from "./routes/noticeRoutes.js";
 import maintenanceRoutes from "./routes/maintenanceRoutes.js";
 import mlRoutes from "./routes/mlroutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
+import analyticsRoutes from "./routes/analytics.js"; // ✅ Added missing analytics import
 
 /* ================= MIDDLEWARE ================= */
 import protect from "./middleware/auth.js";
@@ -47,12 +51,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ================= STATIC FILES ================= */
+// Serves uploaded images for marketplace and user profiles
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 /* ================= API ROUTES ================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/admin", adminTicketRoutes); // 🎫 ADMIN TICKET ROUTES
+app.use("/api/admin", adminTicketRoutes);
 app.use("/api/polls", pollRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/bookings", bookingRoutes);
@@ -64,6 +69,7 @@ app.use("/api/notices", noticeRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/ml", mlRoutes);
 app.use("/api/tickets", ticketRoutes);
+app.use("/api/analytics", analyticsRoutes); // ✅ Mounted analytics routes
 
 /* ================= TEST ROUTE ================= */
 app.get("/api/test", (req, res) => {
@@ -71,9 +77,11 @@ app.get("/api/test", (req, res) => {
 });
 
 /* ================= SERVE FRONTEND ================= */
+// Pointing to the production build of the React app
 app.use(express.static(path.join(__dirname, "../dist")));
 
 /* ================= SPA FALLBACK ================= */
+// Ensures that direct URL access to frontend routes works (Single Page Application)
 app.use((req, res, next) => {
   if (
     req.method === "GET" &&
@@ -88,7 +96,7 @@ app.use((req, res, next) => {
 
 /* ================= ERROR HANDLER ================= */
 app.use((err, req, res, next) => {
-  console.error("Error:", err.stack);
+  console.error("🔥 Error:", err.stack);
   const statusCode = err.status || err.statusCode || 500;
 
   res.status(statusCode).json({

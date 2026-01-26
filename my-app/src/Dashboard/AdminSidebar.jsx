@@ -69,7 +69,12 @@ function AdminSidebar({ isOpen, setIsOpen }) {
       icon: <Building size={20} />,
       path: "/admin/manage-rentals",
     },
-
+    /* 📊 ADDED ANALYTICS */
+    {
+      name: "Analytics",
+      icon: <BarChart3 size={20} />,
+      path: "/admin/analytics",
+    },
     /* 🎫 ADMIN TICKET SYSTEM */
     {
       name: "Ticket Overview",
@@ -100,7 +105,6 @@ function AdminSidebar({ isOpen, setIsOpen }) {
         ${isOpen ? "w-64" : "w-20"}
         transition-all duration-300`}
     >
-      {/* ===== Header ===== */}
       <div className="flex items-center justify-between p-4 h-16 border-b border-gray-700">
         {isOpen && <div className="text-xl font-bold">Aetheria Admin</div>}
         <button
@@ -111,7 +115,6 @@ function AdminSidebar({ isOpen, setIsOpen }) {
         </button>
       </div>
 
-      {/* ===== Navigation ===== */}
       <ul className="flex-1 space-y-2 p-3 overflow-y-auto">
         {menu.map((item) => (
           <NavItem key={item.name} item={item} isOpen={isOpen} />

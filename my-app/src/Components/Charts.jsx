@@ -101,13 +101,18 @@ const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#d84d8b"];
 
 export default function PieChartComponent({
   id,
-  data,
+  data = [],
   nameKey,
   valueKey,
   title,
 }) {
+  const hasData = Array.isArray(data) && data.length > 0;
+
   return (
-    <div id={id} className="bg-gray-800 text-white p-4 rounded relative">
+    <div
+      id={id}
+      className="bg-gray-800 text-white p-4 rounded relative min-h-[320px]"
+    >
       <button
         onClick={() => exportChartToPDF(id, title)}
         className="absolute top-2 right-2 text-sm bg-purple-600 px-2 py-1 rounded"
@@ -117,23 +122,32 @@ export default function PieChartComponent({
 
       <h3 className="mb-3 font-semibold">{title}</h3>
 
-      <ResponsiveContainer width="100%" height={250}>
-        <RePieChart>
-          <Pie
-            data={data}
-            dataKey={valueKey}
-            nameKey={nameKey}
-            outerRadius={90}
-            label
-          >
-            {data.map((_, index) => (
-              <Cell key={index} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </RePieChart>
-      </ResponsiveContainer>
+      {!hasData ? (
+        <div className="flex items-center justify-center h-[250px] text-gray-400">
+          No data available
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height={250}>
+          <RePieChart>
+            <Pie
+              data={data}
+              dataKey={valueKey}
+              nameKey={nameKey}
+              outerRadius={90}
+              label
+            >
+              {data.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </RePieChart>
+        </ResponsiveContainer>
+      )}
     </div>
   );
 }
