@@ -1,6 +1,7 @@
 // src/tickets/TrackTickets.jsx
 import { useState } from "react";
 import api from "../utils/api";
+import TicketTimeline from "./TicketTimeline";
 
 export default function TrackTicket() {
   const [ticketId, setTicketId] = useState("");
@@ -48,6 +49,7 @@ export default function TrackTicket() {
               ? ticket.assignedTo.name || "Assigned"
               : "Pending"}
           </p>
+          <TicketTimeline ticket={ticket} />
         </div>
       )}
     </div>

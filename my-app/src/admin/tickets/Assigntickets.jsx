@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../utils/api";
+import TicketTimeline from "../../tickets/TicketTimeline";
 
 export default function AssignTickets() {
   const [tickets, setTickets] = useState([]);
@@ -66,6 +67,7 @@ export default function AssignTickets() {
             <p className="text-sm text-gray-400">
               Priority: {ticket.priority || "Normal"}
             </p>
+            <TicketTimeline ticket={ticket} />
           </div>
 
           {/* ===== ASSIGN STAFF ===== */}

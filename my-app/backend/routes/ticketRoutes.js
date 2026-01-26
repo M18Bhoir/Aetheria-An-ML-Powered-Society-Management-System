@@ -6,7 +6,7 @@ import protect from "../middleware/auth.js";
 const router = express.Router();
 
 /* ===============================
-   CREATE TICKET
+   CREATE TICKET (USER)
    =============================== */
 router.post("/create", protect, async (req, res) => {
   try {
@@ -88,11 +88,73 @@ router.get("/summary", protect, async (req, res) => {
 });
 
 /* ===============================
+   USER: VIEW OTP (IF GENERATED)
+   =============================== */
+router.get("/:id/otp", protect, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ msg: "Invalid ticket ID" });
+    }
+
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
+
+    if (ticket.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ msg: "Unauthorized" });
+    }
+
+    if (!ticket.otp || ticket.otpExpiresAt < Date.now()) {
+      return res.status(400).json({ msg: "OTP not available or expired" });
+    }
+
+    res.json({ otp: ticket.otp });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to fetch OTP" });
+  }
+});
+
+/* ===============================
+   USER: GENERATE OTP
+   =============================== */
+router.patch("/:id/generate-otp", protect, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ msg: "Invalid ticket ID" });
+    }
+
+    const ticket = await Ticket.findById(req.params.id);
+
+    if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
+
+    if (ticket.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ msg: "Not authorized" });
+    }
+
+    if (ticket.status !== "Resolved") {
+      return res.status(400).json({ msg: "Ticket not resolved yet" });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    ticket.otp = otp;
+    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    ticket.otpVerified = false;
+
+    await ticket.save();
+
+    res.json({ otp });
+  } catch (err) {
+    console.error("Generate OTP error:", err);
+    res.status(500).json({ msg: "Failed to generate OTP" });
+  }
+});
+
+/* ===============================
    GET SINGLE TICKET (LAST!)
    =============================== */
 router.get("/:id", protect, async (req, res) => {
   try {
-    // 🛑 Prevent ObjectId cast crash
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ msg: "Invalid ticket ID" });
     }
@@ -117,23 +179,6 @@ router.get("/:id", protect, async (req, res) => {
     console.error("Fetch single ticket error:", err);
     res.status(500).json({ msg: "Failed to load ticket" });
   }
-});
-
-// routes/ticketRoutes.js
-router.get("/:id/otp", protect, async (req, res) => {
-  const ticket = await Ticket.findById(req.params.id);
-
-  if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
-
-  if (ticket.createdBy.toString() !== req.user.id) {
-    return res.status(403).json({ msg: "Unauthorized" });
-  }
-
-  if (!ticket.otp || ticket.otpExpiresAt < Date.now()) {
-    return res.status(400).json({ msg: "OTP not available or expired" });
-  }
-
-  res.json({ otp: ticket.otp });
 });
 
 export default router;

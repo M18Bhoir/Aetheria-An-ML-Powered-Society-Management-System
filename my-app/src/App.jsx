@@ -23,11 +23,14 @@ import CreatePoll from "./Voting_System/CreatePoll";
 import ExpenseLogger from "./Dashboard/AdminViews/ExpenseLogger";
 import ManageRentals from "./Dashboard/AdminViews/ManageRentals";
 
-/* 🎫 ADMIN TICKETS — FIXED PATHS */
+/* 🎫 ADMIN TICKETS */
 import TicketOverview from "./admin/tickets/TicketOverview.jsx";
-import AssignTickets from "./admin/tickets/Assigntickets.jsx"; // Ensure 't' is lowercase if the file is 'Assigntickets'
+import AssignTickets from "./admin/tickets/Assigntickets.jsx";
 import SLAAlerts from "./admin/tickets/SLAAlerts.jsx";
-import TicketReports from "./admin/tickets/TicketsReport.jsx"; // Check if the file is 'TicketsReport' or 'TicketReports'
+import TicketReports from "./admin/tickets/TicketsReport.jsx";
+
+/* 📊 ADMIN ANALYTICS */
+import AdminAnalyticsDashboard from "./pages/AnalyticsDashboard.jsx";
 
 /* ================= USER IMPORTS ================= */
 import UserLayout from "./UserDashBoard/UserLayout";
@@ -131,6 +134,9 @@ function App() {
             <Route path="poll/:id" element={<PollDetail />} />
             <Route path="expense-logger" element={<ExpenseLogger />} />
             <Route path="manage-rentals" element={<ManageRentals />} />
+
+            {/* 📊 ADMIN ANALYTICS */}
+            <Route path="analytics" element={<AdminAnalyticsDashboard />} />
 
             {/* 🎫 ADMIN TICKETS */}
             <Route path="tickets/overview" element={<TicketOverview />} />
