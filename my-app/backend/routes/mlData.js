@@ -1,9 +1,11 @@
-// routes/mlData.js
 import express from "express";
 import Billing from "../models/Billing.js";
 
 const router = express.Router();
 
+/* ============================
+   🤖 ML Data for Prophet
+   ============================ */
 router.get("/ml/maintenance", async (req, res) => {
   try {
     const data = await Billing.aggregate([
@@ -33,7 +35,7 @@ router.get("/ml/maintenance", async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    res.status(500).json({ message: "ML data fetch failed" });
+    res.status(500).json({ message: "Failed to fetch ML data" });
   }
 });
 

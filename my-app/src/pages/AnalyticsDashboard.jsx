@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import {
-  getMaintenanceCollection,
   getComplaintCategories,
   getAmenityPeakHours,
   getVisitorTrends,
@@ -15,12 +15,27 @@ export default function AnalyticsDashboard() {
   const [visitors, setVisitors] = useState([]);
 
   useEffect(() => {
-    getMaintenanceCollection().then((res) =>
-      setMaintenance(res.data.map((d) => ({ ...d, type: "actual" }))),
-    );
+    /* 🤖 Maintenance ML (Actual + Predicted) */
+    axios.get("/api/analytics/maintenance-prediction").then((res) => {
+      const { actual, predicted } = res.data;
 
+      const actualData = actual.map((d) => ({
+        month: d.ds,
+        collectionRate: Number(d.y), // 👈 force number
+        type: "actual",
+      }));
+
+      const predictedData = predicted.map((d) => ({
+        month: d.ds.slice(0, 7),
+        collectionRate: Number(d.yhat), // 👈 force number
+        type: "predicted",
+      }));
+
+      setMaintenance([...actualData, ...predictedData]);
+    });
+
+    /* Other analytics */
     getComplaintCategories().then((res) => setComplaints(res.data));
-
     getAmenityPeakHours().then((res) => setAmenity(res.data));
 
     getVisitorTrends().then((res) =>
@@ -30,10 +45,10 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="p-6 grid grid-cols-2 gap-6 bg-gray-900 min-h-screen">
-      {/* Maintenance Collection */}
+      {/* 🤖 Maintenance Collection (ML) */}
       <div className="bg-gray-800 p-4 rounded h-[350px]">
         <h2 className="text-white font-semibold mb-2">
-          Maintenance Collection Rate (%)
+          Maintenance Cost Forecast (ML)
         </h2>
         <Chart
           data={maintenance}

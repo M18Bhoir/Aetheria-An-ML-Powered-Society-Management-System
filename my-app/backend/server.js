@@ -35,6 +35,7 @@ import maintenanceRoutes from "./routes/maintenanceRoutes.js";
 import mlRoutes from "./routes/mlroutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import analyticsRoutes from "./routes/analytics.js"; // ✅ Added missing analytics import
+import mlDataRoutes from "./routes/mlData.js";
 
 /* ================= MIDDLEWARE ================= */
 import protect from "./middleware/auth.js";
@@ -70,6 +71,7 @@ app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/ml", mlRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/analytics", analyticsRoutes); // ✅ Mounted analytics routes
+app.use("/api", mlDataRoutes);
 
 /* ================= TEST ROUTE ================= */
 app.get("/api/test", (req, res) => {

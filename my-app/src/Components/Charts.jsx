@@ -32,13 +32,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 /* ================= MAIN COMPONENT ================= */
 
-export default function Chart({
-  data = [],
-  type,
-  dataKey,
-  xAxis,
-  showLabels = true,
-}) {
+export default function Chart({ data = [], type, dataKey, xAxis }) {
   if (!data.length) {
     return (
       <div className="flex items-center justify-center h-full text-gray-400">
@@ -51,9 +45,18 @@ export default function Chart({
   const predictedData = data.filter((d) => d.type === "predicted");
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
+    <ResponsiveContainer
+      width="100%"
+      height="100%"
+      minHeight={250} // ✅ prevents -1 height
+      aspect={2} // ✅ fallback if height collapses
+    >
+      {/* ================= LINE (Actual vs Predicted) ================= */}
       {type === "line" && (
-        <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
 
           <XAxis dataKey={xAxis}>
@@ -79,6 +82,7 @@ export default function Chart({
             stroke="#4f46e5"
             strokeWidth={2}
             dot={{ r: 3 }}
+            isAnimationActive={false}
           />
 
           {/* 🔴 PREDICTED */}
@@ -91,12 +95,17 @@ export default function Chart({
             strokeWidth={2}
             strokeDasharray="6 4"
             dot={{ r: 4 }}
+            isAnimationActive={false}
           />
         </LineChart>
       )}
 
+      {/* ================= BAR ================= */}
       {type === "bar" && (
-        <BarChart data={data}>
+        <BarChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey={xAxis} />
           <YAxis />
@@ -105,8 +114,12 @@ export default function Chart({
         </BarChart>
       )}
 
+      {/* ================= AREA ================= */}
       {type === "area" && (
-        <AreaChart data={data}>
+        <AreaChart
+          data={data}
+          margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey={xAxis} />
           <YAxis />

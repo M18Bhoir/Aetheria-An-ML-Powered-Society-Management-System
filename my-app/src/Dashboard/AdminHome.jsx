@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Clock, Bell, Users, Wrench, UserPlus, DollarSign } from "lucide-react";
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+  Clock,
+  Bell,
+  Users,
+  Wrench,
+  UserPlus,
+  DollarSign,
+  Brain,
+} from "lucide-react";
 import api from "../utils/api";
 import MaintenanceSchedule from "./AdminViews/MaintenanceSchedule";
 import NoticeBoard from "./AdminViews/NoticeBoard";
+import Chart from "../Components/Charts"; // Importing the specialized ML chart component
 
 /* -------------------- Sub Components -------------------- */
 
@@ -46,7 +45,7 @@ const icons = { Bell, Users, Wrench, UserPlus };
 const ActivityFeed = ({ activities }) => (
   <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg">
     <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
-      Activity Feed
+      Recent Activity
     </h3>
     <div className="space-y-4">
       {activities.map((activity) => {
@@ -77,52 +76,38 @@ const ActivityFeed = ({ activities }) => (
   </div>
 );
 
-const DuesBarChart = ({ summary }) => {
-  const collectedNum = Number(summary.collected);
-  const pendingNum = Number(summary.pending);
-
-  const data = [
-    { name: "Collected", Amount: collectedNum, fill: "#16a34a" },
-    { name: "Pending", Amount: pendingNum, fill: "#dc2626" },
-  ];
-
-  return (
-    <div
-      className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg"
-      style={{ height: "350px" }}
-    >
-      <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
-        Dues Overview
-      </h3>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-          <XAxis dataKey="name" stroke="#cbd5e1" />
-          <YAxis stroke="#cbd5e1" />
-          <Tooltip />
-          <Bar dataKey="Amount">
-            {data.map((entry, index) => (
-              <Cell key={index} fill={entry.fill} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
-
 /* -------------------- Main Component -------------------- */
 
 export default function AdminHome() {
   const [dashboardData, setDashboardData] = useState(null);
+  const [maintenanceData, setMaintenanceData] = useState([]); // State for ML Prediction
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchAllData = async () => {
       try {
-        const res = await api.get("/api/admin/dashboard-stats");
-        setDashboardData(res.data);
+        setIsLoading(true);
+        // Fetch General Stats
+        const statsRes = await api.get("/api/admin/dashboard-stats");
+        setDashboardData(statsRes.data);
+
+        // Fetch ML Maintenance Predictions
+        try {
+          const mlRes = await api.get("/api/analytics/maintenance-prediction");
+          // Combine actual and predicted into one array for the Chart component
+          const combinedData = [
+            ...(mlRes.data.actual || []).map((d) => ({ ...d, type: "actual" })),
+            ...(mlRes.data.predicted || []).map((d) => ({
+              ...d,
+              type: "predicted",
+            })),
+          ];
+          setMaintenanceData(combinedData);
+        } catch (mlErr) {
+          console.error("ML Prediction fetch error:", mlErr);
+          // Don't fail the whole dashboard if only ML fails
+        }
       } catch (err) {
         console.error("Dashboard fetch error:", err);
         setError("Failed to load dashboard data");
@@ -130,7 +115,7 @@ export default function AdminHome() {
         setIsLoading(false);
       }
     };
-    fetchStats();
+    fetchAllData();
   }, []);
 
   /* -------------------- Loading / Error -------------------- */
@@ -147,56 +132,38 @@ export default function AdminHome() {
     return <div className="text-center p-6 text-red-500">{error}</div>;
   }
 
-  if (
-    !dashboardData ||
-    !dashboardData.duesSummary ||
-    dashboardData.duesSummary.collected == null ||
-    dashboardData.duesSummary.pending == null
-  ) {
-    return (
-      <div className="text-center p-6 text-red-500">
-        Dashboard data incomplete. Please check backend response.
-      </div>
-    );
-  }
-
   /* -------------------- Dynamic Data -------------------- */
 
   const stats = [
     {
       title: "Residents",
-      value: dashboardData.residentCount ?? 0,
+      value: dashboardData?.residentCount ?? 0,
       icon: <Users size={24} />,
       iconBg: "bg-blue-100 dark:bg-blue-900",
       iconColor: "text-blue-600 dark:text-blue-400",
     },
     {
       title: "Visitors Today",
-      value: dashboardData.visitorCount ?? 0,
+      value: dashboardData?.visitorCount ?? 0,
       icon: <UserPlus size={24} />,
       iconBg: "bg-green-100 dark:bg-green-900",
       iconColor: "text-green-600 dark:text-green-400",
     },
     {
       title: "Dues Pending",
-      value: `₹${dashboardData.duesSummary.pending.toLocaleString("en-IN")}`,
+      value: `₹${dashboardData?.duesSummary?.pending?.toLocaleString("en-IN") ?? 0}`,
       icon: <DollarSign size={24} />,
       iconBg: "bg-yellow-100 dark:bg-yellow-900",
       iconColor: "text-yellow-600 dark:text-yellow-400",
     },
     {
       title: "Notices Issued",
-      value: dashboardData.noticeCount ?? 0,
+      value: dashboardData?.noticeCount ?? 0,
       icon: <Bell size={24} />,
       iconBg: "bg-purple-100 dark:bg-purple-900",
       iconColor: "text-purple-600 dark:text-purple-400",
     },
   ];
-
-  const duesSummary = {
-    collected: dashboardData.duesSummary.collected,
-    pending: dashboardData.duesSummary.pending,
-  };
 
   const activities = [
     {
@@ -228,18 +195,37 @@ export default function AdminHome() {
     },
   ];
 
-  /* -------------------- Render -------------------- */
-
   return (
     <>
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-        Admin Dashboard
-      </h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Admin Dashboard
+        </h1>
+        <div className="flex items-center text-sm font-medium text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full">
+          <Brain size={16} className="mr-2" />
+          ML Insights Active
+        </div>
+      </div>
 
       <StatsCards stats={stats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
-        <DuesBarChart summary={duesSummary} />
+        {/* ML Prediction Chart */}
+        <div
+          className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg"
+          style={{ height: "400px" }}
+        >
+          <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center">
+            Maintenance Cost Forecast (ML)
+          </h3>
+          <Chart
+            type="line"
+            data={maintenanceData}
+            dataKey="amount"
+            xAxis="ds"
+          />
+        </div>
+
         <ActivityFeed activities={activities} />
       </div>
 
