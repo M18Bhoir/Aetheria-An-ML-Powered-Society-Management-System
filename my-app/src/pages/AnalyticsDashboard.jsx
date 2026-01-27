@@ -1,130 +1,67 @@
+import { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Label,
-} from "recharts";
+  getMaintenanceCollection,
+  getComplaintCategories,
+  getAmenityPeakHours,
+  getVisitorTrends,
+} from "../services/analyticsApi";
 
-/* ================= HELPERS ================= */
+import Chart from "../Components/Charts";
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (!active || !payload?.length) return null;
+export default function AnalyticsDashboard() {
+  const [maintenance, setMaintenance] = useState([]);
+  const [complaints, setComplaints] = useState([]);
+  const [amenity, setAmenity] = useState([]);
+  const [visitors, setVisitors] = useState([]);
 
-  return (
-    <div className="bg-gray-900 text-white p-2 rounded text-sm">
-      <p className="font-semibold">{label}</p>
-      {payload.map((item, index) => (
-        <p key={index} style={{ color: item.color }}>
-          {item.name}: {item.value}
-        </p>
-      ))}
-    </div>
-  );
-};
-
-/* ================= MAIN COMPONENT ================= */
-
-export default function Chart({
-  data = [],
-  type,
-  dataKey,
-  xAxis,
-  showLabels = true,
-}) {
-  if (!data.length) {
-    return (
-      <div className="flex items-center justify-center h-full text-gray-400">
-        No data available
-      </div>
+  useEffect(() => {
+    getMaintenanceCollection().then((res) =>
+      setMaintenance(res.data.map((d) => ({ ...d, type: "actual" }))),
     );
-  }
 
-  const actualData = data.filter((d) => d.type === "actual");
-  const predictedData = data.filter((d) => d.type === "predicted");
+    getComplaintCategories().then((res) => setComplaints(res.data));
+
+    getAmenityPeakHours().then((res) => setAmenity(res.data));
+
+    getVisitorTrends().then((res) =>
+      setVisitors(res.data.map((d) => ({ ...d, type: "actual" }))),
+    );
+  }, []);
 
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      {type === "line" && (
-        <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
-          <CartesianGrid strokeDasharray="3 3" />
+    <div className="p-6 grid grid-cols-2 gap-6 bg-gray-900 min-h-screen">
+      {/* Maintenance Collection */}
+      <div className="bg-gray-800 p-4 rounded h-[350px]">
+        <h2 className="text-white font-semibold mb-2">
+          Maintenance Collection Rate (%)
+        </h2>
+        <Chart
+          data={maintenance}
+          type="line"
+          dataKey="collectionRate"
+          xAxis="month"
+        />
+      </div>
 
-          <XAxis dataKey={xAxis}>
-            <Label value={xAxis.toUpperCase()} position="bottom" />
-          </XAxis>
+      {/* Complaints */}
+      <div className="bg-gray-800 p-4 rounded h-[350px]">
+        <h2 className="text-white font-semibold mb-2">
+          Complaints by Category
+        </h2>
+        <Chart data={complaints} type="bar" dataKey="count" xAxis="category" />
+      </div>
 
-          <YAxis>
-            <Label
-              value={dataKey.toUpperCase()}
-              angle={-90}
-              position="insideLeft"
-            />
-          </YAxis>
+      {/* Amenity Peak Hours */}
+      <div className="bg-gray-800 p-4 rounded h-[350px]">
+        <h2 className="text-white font-semibold mb-2">Amenity Peak Hours</h2>
+        <Chart data={amenity} type="bar" dataKey="bookings" xAxis="hour" />
+      </div>
 
-          <Tooltip content={<CustomTooltip />} />
-
-          {/* 🔵 ACTUAL DATA */}
-          <Line
-            data={actualData}
-            type="monotone"
-            dataKey={dataKey}
-            name="Actual"
-            stroke="#4f46e5"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-          />
-
-          {/* 🔴 PREDICTED DATA */}
-          <Line
-            data={predictedData}
-            type="monotone"
-            dataKey={dataKey}
-            name="Predicted"
-            stroke="#ef4444"
-            strokeWidth={2}
-            strokeDasharray="6 4"
-            dot={{ r: 4 }}
-          />
-        </LineChart>
-      )}
-
-      {type === "bar" && (
-        <BarChart
-          data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xAxis} />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey={dataKey} fill="#22c55e" />
-        </BarChart>
-      )}
-
-      {type === "area" && (
-        <AreaChart
-          data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey={xAxis} />
-          <YAxis />
-          <Tooltip />
-          <Area
-            type="monotone"
-            dataKey={dataKey}
-            stroke="#f59e0b"
-            fill="#fde68a"
-          />
-        </AreaChart>
-      )}
-    </ResponsiveContainer>
+      {/* Visitor Trends */}
+      <div className="bg-gray-800 p-4 rounded h-[350px]">
+        <h2 className="text-white font-semibold mb-2">Visitor Trends</h2>
+        <Chart data={visitors} type="line" dataKey="visitors" xAxis="date" />
+      </div>
+    </div>
   );
 }

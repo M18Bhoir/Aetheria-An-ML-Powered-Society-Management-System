@@ -11,47 +11,21 @@ import {
   Tooltip,
   ResponsiveContainer,
   Label,
-  LabelList,
 } from "recharts";
 
 /* ================= HELPERS ================= */
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
-const formatXAxis = (value, xAxis) => {
-  if (xAxis === "month") return MONTHS[value - 1] || value;
-  return value;
-};
-
-const formatValue = (value, dataKey) => {
-  if (dataKey.toLowerCase().includes("rate")) return `${value}%`;
-  return value;
-};
-
-/* ================= TOOLTIP ================= */
-
-const CustomTooltip = ({ active, payload, label, xAxis, dataKey }) => {
+const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
 
   return (
     <div className="bg-gray-900 text-white p-2 rounded text-sm">
-      <p className="font-semibold">{formatXAxis(label, xAxis)}</p>
-      <p>
-        {dataKey}: {formatValue(payload[0].value, dataKey)}
-      </p>
+      <p className="font-semibold">{label}</p>
+      {payload.map((item, index) => (
+        <p key={index} style={{ color: item.color }}>
+          {item.name}: {item.value}
+        </p>
+      ))}
     </div>
   );
 };
@@ -63,7 +37,7 @@ export default function Chart({
   type,
   dataKey,
   xAxis,
-  showLabels = true, // 🔥 toggle labels
+  showLabels = true,
 }) {
   if (!data.length) {
     return (
@@ -73,27 +47,20 @@ export default function Chart({
     );
   }
 
-  const commonProps = {
-    data,
-    margin: { top: 20, right: 30, left: 20, bottom: 50 },
-  };
+  const actualData = data.filter((d) => d.type === "actual");
+  const predictedData = data.filter((d) => d.type === "predicted");
 
   return (
     <ResponsiveContainer width="100%" height="100%">
       {type === "line" && (
-        <LineChart {...commonProps}>
+        <LineChart margin={{ top: 20, right: 30, left: 20, bottom: 50 }}>
           <CartesianGrid strokeDasharray="3 3" />
 
-          <XAxis
-            dataKey={xAxis}
-            tickFormatter={(v) => formatXAxis(v, xAxis)}
-            angle={data.length > 6 ? -30 : 0}
-            textAnchor="end"
-          >
+          <XAxis dataKey={xAxis}>
             <Label value={xAxis.toUpperCase()} position="bottom" />
           </XAxis>
 
-          <YAxis tickFormatter={(v) => formatValue(v, dataKey)}>
+          <YAxis>
             <Label
               value={dataKey.toUpperCase()}
               angle={-90}
@@ -101,90 +68,55 @@ export default function Chart({
             />
           </YAxis>
 
-          <Tooltip
-            content={<CustomTooltip xAxis={xAxis} dataKey={dataKey} />}
-          />
+          <Tooltip content={<CustomTooltip />} />
 
+          {/* 🔵 ACTUAL */}
           <Line
+            data={actualData}
             type="monotone"
             dataKey={dataKey}
-            stroke="#8884d8"
+            name="Actual"
+            stroke="#4f46e5"
             strokeWidth={2}
-          >
-            {showLabels && (
-              <LabelList
-                dataKey={dataKey}
-                position="top"
-                formatter={(v) => formatValue(v, dataKey)}
-              />
-            )}
-          </Line>
+            dot={{ r: 3 }}
+          />
+
+          {/* 🔴 PREDICTED */}
+          <Line
+            data={predictedData}
+            type="monotone"
+            dataKey={dataKey}
+            name="Predicted"
+            stroke="#ef4444"
+            strokeWidth={2}
+            strokeDasharray="6 4"
+            dot={{ r: 4 }}
+          />
         </LineChart>
       )}
 
       {type === "bar" && (
-        <BarChart {...commonProps}>
+        <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-
-          <XAxis
-            dataKey={xAxis}
-            angle={data.length > 6 ? -30 : 0}
-            textAnchor="end"
-          >
-            <Label value={xAxis.toUpperCase()} position="bottom" />
-          </XAxis>
-
-          <YAxis>
-            <Label
-              value={dataKey.toUpperCase()}
-              angle={-90}
-              position="insideLeft"
-            />
-          </YAxis>
-
-          <Tooltip
-            content={<CustomTooltip xAxis={xAxis} dataKey={dataKey} />}
-          />
-
-          <Bar dataKey={dataKey} fill="#82ca9d">
-            {showLabels && <LabelList dataKey={dataKey} position="top" />}
-          </Bar>
+          <XAxis dataKey={xAxis} />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey={dataKey} fill="#22c55e" />
         </BarChart>
       )}
 
       {type === "area" && (
-        <AreaChart {...commonProps}>
+        <AreaChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-
-          <XAxis
-            dataKey={xAxis}
-            angle={data.length > 6 ? -30 : 0}
-            textAnchor="end"
-          >
-            <Label value={xAxis.toUpperCase()} position="bottom" />
-          </XAxis>
-
-          <YAxis>
-            <Label
-              value={dataKey.toUpperCase()}
-              angle={-90}
-              position="insideLeft"
-            />
-          </YAxis>
-
-          <Tooltip
-            content={<CustomTooltip xAxis={xAxis} dataKey={dataKey} />}
-          />
-
+          <XAxis dataKey={xAxis} />
+          <YAxis />
+          <Tooltip />
           <Area
             type="monotone"
             dataKey={dataKey}
-            stroke="#ffc658"
-            fill="#ffc658"
-            fillOpacity={0.6}
-          >
-            {showLabels && <LabelList dataKey={dataKey} position="top" />}
-          </Area>
+            stroke="#f59e0b"
+            fill="#fde68a"
+          />
         </AreaChart>
       )}
     </ResponsiveContainer>

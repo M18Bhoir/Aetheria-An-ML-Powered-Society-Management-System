@@ -1,36 +1,34 @@
 from fastapi import FastAPI
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-import numpy as np
+from prophet import Prophet
 
 app = FastAPI()
 
 @app.post("/predict-maintenance")
 def predict_maintenance(data: list):
+    # Convert incoming JSON to DataFrame
     df = pd.DataFrame(data)
 
-    # Convert month → number
-    df["month_index"] = range(len(df))
+    # Convert ds to datetime
+    df["ds"] = pd.to_datetime(df["ds"])
 
-    X = df[["month_index"]]
-    y = df["collectionRate"]
+    # Initialize Prophet
+    model = Prophet(
+        yearly_seasonality=True,
+        weekly_seasonality=False,
+        daily_seasonality=False
+    )
 
-    model = LinearRegression()
-    model.fit(X, y)
+    # Train model
+    model.fit(df)
 
-    # Predict next 3 months
-    future_months = 3
-    future_index = np.array(
-        range(len(df), len(df) + future_months)
-    ).reshape(-1, 1)
+    # Forecast next 3 months
+    future = model.make_future_dataframe(periods=3, freq="M")
+    forecast = model.predict(future)
 
-    predictions = model.predict(future_index)
+    # Return only future predictions
+    result = forecast.tail(3)[
+        ["ds", "yhat", "yhat_lower", "yhat_upper"]
+    ]
 
-    results = []
-    for i, pred in enumerate(predictions):
-        results.append({
-            "monthIndex": int(future_index[i][0]),
-            "predictedCollectionRate": round(float(pred), 2)
-        })
-
-    return results
+    return result.to_dict(orient="records")
