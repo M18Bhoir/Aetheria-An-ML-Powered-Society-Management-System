@@ -119,33 +119,23 @@ router.get("/:id/otp", protect, async (req, res) => {
    =============================== */
 router.patch("/:id/generate-otp", protect, async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ msg: "Invalid ticket ID" });
-    }
-
     const ticket = await Ticket.findById(req.params.id);
-
     if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
-
-    if (ticket.createdBy.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ msg: "Not authorized" });
-    }
 
     if (ticket.status !== "Resolved") {
       return res.status(400).json({ msg: "Ticket not resolved yet" });
     }
 
+    // Generate random 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000);
 
     ticket.otp = otp;
-    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000; // Valid for 10 minutes
     ticket.otpVerified = false;
 
     await ticket.save();
-
     res.json({ otp });
   } catch (err) {
-    console.error("Generate OTP error:", err);
     res.status(500).json({ msg: "Failed to generate OTP" });
   }
 });

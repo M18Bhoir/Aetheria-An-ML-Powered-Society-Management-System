@@ -69,22 +69,11 @@ function AdminSidebar({ isOpen, setIsOpen }) {
       icon: <Building size={20} />,
       path: "/admin/manage-rentals",
     },
-    /* 📊 ADDED ANALYTICS */
-    {
-      name: "Analytics",
-      icon: <BarChart3 size={20} />,
-      path: "/admin/analytics",
-    },
     /* 🎫 ADMIN TICKET SYSTEM */
     {
       name: "Ticket Overview",
       icon: <Ticket size={20} />,
       path: "/admin/tickets/overview",
-    },
-    {
-      name: "Assign Tickets",
-      icon: <UserCheck size={20} />,
-      path: "/admin/tickets/assign",
     },
     {
       name: "SLA Alerts",

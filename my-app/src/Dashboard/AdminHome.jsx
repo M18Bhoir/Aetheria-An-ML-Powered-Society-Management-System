@@ -96,10 +96,18 @@ export default function AdminHome() {
         try {
           const mlRes = await api.get("/api/analytics/maintenance-prediction");
           // Combine actual and predicted into one array for the Chart component
+          // my-app/src/Dashboard/AdminHome.jsx
+
+          // Update the combinedData logic inside fetchAllData:
           const combinedData = [
-            ...(mlRes.data.actual || []).map((d) => ({ ...d, type: "actual" })),
+            ...(mlRes.data.actual || []).map((d) => ({
+              ds: d.ds,
+              amount: d.y, // Map 'y' to 'amount'
+              type: "actual",
+            })),
             ...(mlRes.data.predicted || []).map((d) => ({
-              ...d,
+              ds: new Date(d.ds).toISOString().split("T")[0],
+              amount: d.yhat, // Map 'yhat' to 'amount'
               type: "predicted",
             })),
           ];

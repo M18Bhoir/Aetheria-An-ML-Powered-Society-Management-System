@@ -228,4 +228,71 @@ router.get("/dashboard-stats", adminAuth, async (req, res) => {
   }
 });
 
+/* ================= 📊 TICKET OVERVIEW ================= */
+router.get("/tickets/overview", adminAuth, async (req, res) => {
+  try {
+    const [total, open, pendingClosure, closed] = await Promise.all([
+      Ticket.countDocuments(),
+      Ticket.countDocuments({ status: "Open" }),
+      Ticket.countDocuments({ status: "Pending Closure" }),
+      Ticket.countDocuments({ status: "Closed" }),
+    ]);
+
+    res.json({ total, open, pendingClosure, closed });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to load overview" });
+  }
+});
+
+/* ================= 📋 ALL TICKETS ================= */
+router.get("/tickets", adminAuth, async (req, res) => {
+  try {
+    const tickets = await Ticket.find()
+      .populate("createdBy", "name phone")
+      .sort({ createdAt: -1 });
+
+    res.json(tickets);
+  } catch {
+    res.status(500).json({ msg: "Failed to fetch tickets" });
+  }
+});
+
+/* ================= 🔐 REQUEST CLOSE (SEND OTP) ================= */
+router.post("/tickets/:id/request-close", adminAuth, async (req, res) => {
+  try {
+    console.log("🔥 Request Close hit:", req.params.id);
+
+    const ticket = await Ticket.findById(req.params.id).populate(
+      "createdBy",
+      "phone",
+    );
+
+    if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
+
+    if (ticket.status !== "Open") {
+      return res.status(400).json({ msg: "Ticket not open" });
+    }
+
+    const otp = generateOtp();
+
+    ticket.status = "Pending Closure";
+    ticket.closeOtp = otp;
+    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000;
+
+    await ticket.save();
+
+    // 🔧 TEMP: comment this if Twilio not ready
+    await sendOtpToResident({
+      phone: ticket.createdBy.phone,
+      otp,
+      channel: "sms",
+    });
+
+    res.json({ msg: "OTP sent to resident" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Failed to request close" });
+  }
+});
+
 export default router;

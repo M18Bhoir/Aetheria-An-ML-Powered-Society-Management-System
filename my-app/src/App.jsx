@@ -25,7 +25,6 @@ import ManageRentals from "./Dashboard/AdminViews/ManageRentals";
 
 /* 🎫 ADMIN TICKETS */
 import TicketOverview from "./admin/tickets/TicketOverview.jsx";
-import AssignTickets from "./admin/tickets/Assigntickets.jsx";
 import SLAAlerts from "./admin/tickets/SLAAlerts.jsx";
 import TicketReports from "./admin/tickets/TicketsReport.jsx";
 
@@ -138,7 +137,6 @@ function App() {
 
             {/* 🎫 ADMIN TICKETS */}
             <Route path="tickets/overview" element={<TicketOverview />} />
-            <Route path="tickets/assign" element={<AssignTickets />} />
             <Route path="tickets/sla-alerts" element={<SLAAlerts />} />
             <Route path="tickets/reports" element={<TicketReports />} />
           </Route>

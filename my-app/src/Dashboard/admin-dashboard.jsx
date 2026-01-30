@@ -91,11 +91,6 @@ const Sidebar = () => {
       path: "/admin/tickets/overview",
     },
     {
-      name: "Assign Tickets",
-      icon: <UserCheck size={20} />,
-      path: "/admin/tickets/assign",
-    },
-    {
       name: "SLA Alerts",
       icon: <ClockAlert size={20} />,
       path: "/admin/tickets/sla-alerts",

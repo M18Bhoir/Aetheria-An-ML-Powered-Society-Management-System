@@ -56,7 +56,6 @@ export default function MyTickets() {
                   >
                     Generate OTP
                   </button>
-
                   <p className="text-yellow-400 mt-2 text-sm">
                     Share this OTP with admin to close ticket
                   </p>

@@ -1,49 +1,85 @@
 import { useEffect, useState } from "react";
-import api from "../../utils/api"; // ✅ FIXED PATH
+import api from "../../utils/api";
 
 export default function TicketOverview() {
   const [stats, setStats] = useState(null);
-  const [error, setError] = useState(null);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    setLoading(true);
+    const [statsRes, ticketsRes] = await Promise.all([
+      api.get("/api/admin/tickets/overview"),
+      api.get("/api/admin/tickets"),
+    ]);
+    setStats(statsRes.data);
+    setTickets(ticketsRes.data);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await api.get("/api/admin/tickets/overview");
-        setStats(res.data);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load ticket statistics");
-      }
-    };
-
-    fetchStats();
+    fetchData();
   }, []);
 
-  if (error) return <p className="text-red-400">{error}</p>;
-  if (!stats) return <p className="text-white">Loading...</p>;
+  const requestCloseTicket = async (id) => {
+    try {
+      await api.post(`/api/admin/tickets/${id}/request-close`);
+      alert("OTP sent to resident");
+      fetchData();
+    } catch (err) {
+      console.error(err.response?.data || err.message);
+      alert("Failed to request close");
+    }
+  };
 
-  const cards = [
-    { label: "Total", value: stats.total ?? 0, color: "bg-blue-600" },
-    { label: "Open", value: stats.open ?? 0, color: "bg-yellow-600" },
-    { label: "Assigned", value: stats.assigned ?? 0, color: "bg-indigo-600" },
-    { label: "Closed", value: stats.closed ?? 0, color: "bg-green-600" },
-  ];
+  if (loading) return <p className="text-white">Loading...</p>;
 
   return (
-    <div className="p-6 text-white">
-      <h2 className="text-2xl font-bold mb-6">📊 Ticket Overview</h2>
+    <div className="p-6 text-white space-y-6">
+      <h2 className="text-2xl font-bold">Ticket Overview</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {cards.map((card) => (
-          <div
-            key={card.label}
-            className={`p-6 rounded-lg shadow-lg ${card.color}`}
-          >
-            <p className="text-sm opacity-80">{card.label}</p>
-            <p className="text-3xl font-bold">{card.value}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-blue-600 p-4 rounded">Total: {stats.total}</div>
+        <div className="bg-yellow-600 p-4 rounded">Open: {stats.open}</div>
+        <div className="bg-green-600 p-4 rounded">Closed: {stats.closed}</div>
       </div>
+
+      <table className="w-full mt-6 text-left">
+        <thead>
+          <tr className="border-b border-gray-700">
+            <th>Title</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {tickets.map((t) => (
+            <tr key={t._id} className="border-b border-gray-800">
+              <td>{t.title}</td>
+              <td>{t.status}</td>
+              <td>{new Date(t.createdAt).toLocaleDateString()}</td>
+              <td>
+                <button
+                  disabled={t.status !== "Open"}
+                  onClick={() => requestCloseTicket(t._id)}
+                  className={`px-3 py-1 rounded text-sm
+                    ${
+                      t.status === "Open"
+                        ? "bg-indigo-600 hover:bg-indigo-700"
+                        : "bg-gray-500 cursor-not-allowed"
+                    }`}
+                >
+                  {t.status === "Pending Closure"
+                    ? "OTP Sent"
+                    : "Request Close"}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
