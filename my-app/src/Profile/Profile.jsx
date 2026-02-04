@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from "react";
-import api from '../utils/api'; // Import the API utility
+import api from "../utils/api";
 
 const Profile = () => {
-  // 1. Add state for user, loading, and error
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 2. Fetch user data from the backend
+  // State for password change form
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [updateMessage, setUpdateMessage] = useState({ type: "", text: "" });
+
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        // Use the API route defined in userRoutes.js
-        const res = await api.get('/api/user/profile'); 
+        const res = await api.get("/api/users/profile"); // Ensure this matches your server route
         setUser(res.data);
       } catch (err) {
         console.error("Failed to fetch profile:", err);
@@ -22,51 +27,133 @@ const Profile = () => {
         setLoading(false);
       }
     };
-
     fetchProfile();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // 3. Add loading and error states
-  if (loading) {
-    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">Loading profile...</div>;
-  }
+  const handlePasswordChange = (e) => {
+    setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  };
 
-  if (error) {
-    return <div className="p-6 text-center text-red-500 dark:text-red-400">Error: {error}</div>;
-  }
+  const handleSubmitPassword = async (e) => {
+    e.preventDefault();
+    setUpdateMessage({ type: "", text: "" });
 
-  if (!user) {
-    return <div className="p-6 text-center text-gray-500 dark:text-gray-400">No profile data found.</div>;
-  }
+    // Client-side validation
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return setUpdateMessage({
+        type: "error",
+        text: "New passwords do not match",
+      });
+    }
 
-  // 4. Update JSX to use data from state
+    try {
+      const res = await api.put("/api/users/profile", {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword,
+      });
+      setUpdateMessage({
+        type: "success",
+        text: "Password updated successfully!",
+      });
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (err) {
+      setUpdateMessage({
+        type: "error",
+        text: err.response?.data?.msg || "Failed to update password",
+      });
+    }
+  };
+
+  if (loading)
+    return <div className="p-6 text-center text-gray-400">Loading...</div>;
+  if (error)
+    return <div className="p-6 text-center text-red-500">Error: {error}</div>;
+
   return (
-    <div className="flex-1 space-y-6 p-6">
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg max-w-lg mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">My Profile</h2>
-        <div className="space-y-4">
-          
+    <div className="flex-1 space-y-6 p-6 bg-slate-900 min-h-screen">
+      <div className="bg-slate-800 p-8 rounded-xl shadow-lg max-w-lg mx-auto border border-slate-700">
+        <h2 className="text-2xl font-bold mb-6 text-white">My Profile</h2>
+
+        {/* Profile Info Section */}
+        <div className="space-y-4 mb-8 pb-8 border-b border-slate-700">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Name</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">{user.name}</p>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Name
+            </p>
+            <p className="text-lg text-white">{user.name}</p>
           </div>
-          
-          <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Email</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">{user.email}</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                User ID
+              </p>
+              <p className="text-white">{user.userId}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                Role
+              </p>
+              <p className="text-white capitalize">{user.role}</p>
+            </div>
           </div>
-          
+        </div>
+
+        {/* Change Password Section */}
+        <h3 className="text-xl font-bold mb-4 text-white">Change Password</h3>
+        <form onSubmit={handleSubmitPassword} className="space-y-4">
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">User ID / Flat Number</p>
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">{user.userId}</p>
+            <input
+              type="password"
+              name="currentPassword"
+              placeholder="Current Password (e.g. 123456)"
+              value={passwordData.currentPassword}
+              onChange={handlePasswordChange}
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
           </div>
-          
           <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">Role</p>
-            <p className="text-lg font-semibold capitalize text-gray-900 dark:text-white">{user.role}</p>
+            <input
+              type="password"
+              name="newPassword"
+              placeholder="New Password"
+              value={passwordData.newPassword}
+              onChange={handlePasswordChange}
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
+          </div>
+          <div>
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm New Password"
+              value={passwordData.confirmPassword}
+              onChange={handlePasswordChange}
+              className="w-full p-2 rounded bg-slate-700 border border-slate-600 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            />
           </div>
 
-        </div>
+          {updateMessage.text && (
+            <p
+              className={`text-sm ${updateMessage.type === "success" ? "text-green-400" : "text-red-400"}`}
+            >
+              {updateMessage.text}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+          >
+            Update Password
+          </button>
+        </form>
       </div>
     </div>
   );

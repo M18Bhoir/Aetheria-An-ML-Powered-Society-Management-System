@@ -9,9 +9,21 @@ const ticketSchema = new mongoose.Schema(
       enum: ["Maintenance", "Electrical", "Security", "Billing", "Amenities"],
       default: "Maintenance",
     },
+    priority: {
+      type: String,
+      enum: ["P1", "P2", "P3", "P4"],
+      default: "P3",
+    },
     status: {
       type: String,
-      enum: ["Open", "Assigned", "In Progress", "Resolved", "Closed"],
+      enum: [
+        "Open",
+        "Assigned",
+        "In Progress",
+        "Resolved",
+        "Pending Closure",
+        "Closed",
+      ],
       default: "Open",
     },
     createdBy: {
@@ -19,11 +31,15 @@ const ticketSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    assignedTo: { type: String, default: null },
-    // OTP fields for closing the ticket
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+      default: null,
+    },
     otp: { type: String },
     otpExpiresAt: { type: Date },
     otpVerified: { type: Boolean, default: false },
+    slaDueAt: { type: Date },
     closedAt: { type: Date },
   },
   { timestamps: true },

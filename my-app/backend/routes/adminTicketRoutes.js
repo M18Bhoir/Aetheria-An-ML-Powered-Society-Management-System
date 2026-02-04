@@ -7,49 +7,40 @@ import { sendOtpToResident } from "../utils/sendOtp.js";
 const router = express.Router();
 
 /* ================= 📊 TICKET OVERVIEW ================= */
+/* ================= 📊 TICKET OVERVIEW ================= */
 router.get("/tickets/overview", adminAuth, async (req, res) => {
   try {
-    const total = await Ticket.countDocuments();
-    const open = await Ticket.countDocuments({ status: "Open" });
-    const resolved = await Ticket.countDocuments({ status: "Resolved" });
-    const closed = await Ticket.countDocuments({ status: "Closed" });
+    // Aggregating counts for all statuses defined in the Ticket model
+    const stats = await Ticket.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
-    res.json({ total, open, resolved, closed });
+    // Format the result into a clean object for the frontend
+    const overview = {
+      total: 0,
+      open: 0,
+      inProgress: 0,
+      pendingClosure: 0,
+      closed: 0,
+    };
+
+    stats.forEach((stat) => {
+      overview.total += stat.count;
+      if (stat._id === "Open") overview.open = stat.count;
+      if (stat._id === "In Progress") overview.inProgress = stat.count;
+      if (stat._id === "Pending Closure") overview.pendingClosure = stat.count;
+      if (stat._id === "Closed") overview.closed = stat.count;
+    });
+
+    res.json(overview);
   } catch (err) {
     console.error("OVERVIEW ERROR:", err);
-    res.status(500).json({ msg: err.message });
-  }
-});
-
-router.post("/tickets/:id/request-close", adminAuth, async (req, res) => {
-  try {
-    const ticket = await Ticket.findById(req.params.id).populate(
-      "createdBy",
-      "phone",
-    );
-
-    if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
-
-    if (ticket.status !== "Open" && ticket.status !== "In Progress") {
-      return res.status(400).json({ msg: "Ticket not eligible for resolve" });
-    }
-
-    const otp = generateOtp();
-
-    ticket.status = "Resolved";
-    ticket.otp = otp;
-    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000;
-    ticket.otpVerified = false;
-
-    await ticket.save();
-
-    // Optional: send OTP
-    // await sendOtpToResident({ phone: ticket.createdBy.phone, otp });
-
-    res.json({ msg: "OTP generated, ticket resolved" });
-  } catch (err) {
-    console.error("REQUEST CLOSE ERROR:", err);
-    res.status(500).json({ msg: err.message });
+    res.status(500).json({ msg: "Failed to fetch ticket statistics" });
   }
 });
 
@@ -57,56 +48,70 @@ router.post("/tickets/:id/request-close", adminAuth, async (req, res) => {
 router.get("/tickets", adminAuth, async (req, res) => {
   try {
     const tickets = await Ticket.find()
-      .populate("createdBy", "name email userId")
+      .populate("createdBy", "name email phone")
       .sort({ createdAt: -1 });
 
     res.json(tickets);
-  } catch {
+  } catch (err) {
     res.status(500).json({ msg: "Failed to fetch tickets" });
   }
 });
 
-/* ================= 🔐 REQUEST CLOSE (SEND OTP) ================= */
+/* ================= 🔐 REQUEST CLOSE (GENERATE & SEND OTP) ================= */
+// Consolidated into one route with proper status and field names
 router.post("/tickets/:id/request-close", adminAuth, async (req, res) => {
   try {
     const ticket = await Ticket.findById(req.params.id).populate(
       "createdBy",
-      "email name",
+      "phone email name",
     );
 
     if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
 
-    if (ticket.status === "Closed")
-      return res.status(400).json({ msg: "Ticket already closed" });
+    // Allow resolution only if ticket is active
+    if (["Closed", "Pending Closure"].includes(ticket.status)) {
+      return res.status(400).json({ msg: "Ticket already resolved or closed" });
+    }
 
     const otp = generateOtp();
 
+    // Aligning with Ticket.js model fields
     ticket.status = "Pending Closure";
-    ticket.closeOtp = otp;
-    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000;
+    ticket.otp = otp;
+    ticket.otpExpiresAt = Date.now() + 10 * 60 * 1000; // 10 mins
+    ticket.otpVerified = false;
 
     await ticket.save();
 
-    // 📧 Send OTP to resident
-    await sendOtpToResident(ticket.createdBy.email, otp);
+    // Send OTP using the phone number populated from the User model
+    if (ticket.createdBy && ticket.createdBy.phone) {
+      await sendOtpToResident({
+        phone: ticket.createdBy.phone,
+        otp,
+        channel: "sms",
+      });
+    }
 
-    res.json({ msg: "OTP sent to resident for ticket closure" });
+    res.json({
+      msg: "OTP sent to resident. Ticket marked as Pending Closure.",
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Failed to send OTP" });
+    console.error("ADMIN RESOLVE ERROR:", err);
+    res.status(500).json({ msg: "Failed to initiate ticket closure" });
   }
 });
 
 /* ================= ⏰ SLA ALERTS ================= */
 router.get("/tickets/sla-alerts", adminAuth, async (req, res) => {
   try {
+    // Requires 'slaDueAt' to be added to the Ticket Schema
     const tickets = await Ticket.find({
-      status: { $ne: "Closed" },
+      status: { $nin: ["Closed", "Pending Closure"] },
       slaDueAt: { $lt: new Date() },
     }).populate("createdBy", "name");
 
     res.json(tickets);
-  } catch {
+  } catch (err) {
     res.status(500).json({ msg: "Failed to load SLA alerts" });
   }
 });

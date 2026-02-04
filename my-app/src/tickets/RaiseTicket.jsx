@@ -13,9 +13,11 @@ export default function RaiseTicket() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // ... imports
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Corrected endpoint from /api/tickets to the base path handled by server.js
       await api.post("/api/tickets", formData);
       alert("Ticket created successfully!");
       setFormData({
@@ -25,7 +27,7 @@ export default function RaiseTicket() {
         priority: "P3",
       });
     } catch (err) {
-      alert("Failed to create ticket");
+      alert(err.response?.data?.msg || "Failed to create ticket");
     }
   };
 

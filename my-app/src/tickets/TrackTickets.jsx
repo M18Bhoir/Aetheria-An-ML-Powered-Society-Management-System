@@ -7,12 +7,19 @@ export default function TrackTicket() {
   const [ticketId, setTicketId] = useState("");
   const [ticket, setTicket] = useState(null);
 
+  // ... imports
   const handleTrack = async () => {
+    if (!ticketId.trim()) return alert("Please enter a Ticket ID");
     try {
       const res = await api.get(`/api/tickets/${ticketId}`);
       setTicket(res.data);
     } catch (err) {
-      alert("Ticket not found or Unauthorized");
+      const message =
+        err.response?.status === 404
+          ? "Ticket not found. Please check the ID."
+          : "You do not have permission to view this ticket.";
+      alert(message);
+      setTicket(null);
     }
   };
 
