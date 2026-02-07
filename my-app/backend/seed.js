@@ -1,14 +1,14 @@
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import connectDB from './config/db.js';
-import User from './models/User.js';
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+import connectDB from "./config/db.js";
+import User from "./models/User.js";
 
 // Load .env file
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, './.env') });
+dotenv.config({ path: path.resolve(__dirname, "./.env") });
 
 const residentData = [
   { name: "Manas Bhoir", userId: "A-101" },
@@ -30,24 +30,24 @@ const residentData = [
   { name: "Bhushan Ingale", userId: "B-101" },
   { name: "Ayush Kanse", userId: "B-102" },
   { name: "PushKar Karnik", userId: "B-103" },
-  { name: "Sumit Kanse", userId: "B-104" }
+  { name: "Sumit Kanse", userId: "B-104" },
 ];
 
 const importData = async () => {
   try {
     await connectDB();
     await User.deleteMany(); // Clear old users
-    console.log('Purane users delete kar diye gaye...');
+    console.log("Purane users delete kar diye gaye...");
 
-    const usersToInsert = residentData.map(user => {
-      const dummyEmail = `${user.userId.toLowerCase().replace(/ /g, '')}@aetheria.com`;
-      const defaultPassword = "123456"; 
+    const usersToInsert = residentData.map((user) => {
+      const dummyEmail = `${user.userId.toLowerCase().replace(/ /g, "")}@aetheria.com`;
+      const defaultPassword = "Apsit@123";
 
       return {
         ...user,
         email: dummyEmail,
         password: defaultPassword,
-        role: 'user'
+        role: "user",
       };
     });
 
@@ -56,7 +56,9 @@ const importData = async () => {
       await User.create(userData);
     }
 
-    console.log(`Successfully! Sabhi ${usersToInsert.length} residents ko add kar diya gaya hai!`);
+    console.log(
+      `Successfully! Sabhi ${usersToInsert.length} residents ko add kar diya gaya hai!`,
+    );
     process.exit();
   } catch (error) {
     console.error(`Error: ${error.message}`);

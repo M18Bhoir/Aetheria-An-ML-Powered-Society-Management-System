@@ -1,9 +1,8 @@
 import axios from "axios";
 
-// Create a new Axios instance
+// Updated to use environment variables for flexibility
 const api = axios.create({
-  // NO baseURL here
-  baseURL: "http://localhost:5000",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000",
   headers: {
     "Content-Type": "application/json",
   },
@@ -14,7 +13,6 @@ const api = axios.create({
  */
 api.interceptors.request.use(
   (config) => {
-    // Get the most up-to-date token from localStorage
     const currentToken = localStorage.getItem("token");
     if (currentToken) {
       config.headers["Authorization"] = `Bearer ${currentToken}`;
@@ -30,12 +28,11 @@ api.interceptors.request.use(
  * Interceptor for responses
  */
 api.interceptors.response.use(
-  (res) => {
-    return res;
-  },
+  (res) => res,
   (err) => {
     if (err.response && err.response.status === 401) {
       console.error("Unauthorized! Logging out.");
+      // Standardize cleanup
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("admin");
