@@ -5,10 +5,7 @@ import Admin from "../models/Admin.js";
 
 const router = express.Router();
 
-/**
- * @route   POST /api/auth/signup
- * @desc    Register a new user
- */
+/* ================= SIGNUP ================= */
 router.post("/signup", async (req, res) => {
   const { name, email, userId, password } = req.body;
 
@@ -22,9 +19,7 @@ router.post("/signup", async (req, res) => {
     });
 
     if (userExists) {
-      return res
-        .status(400)
-        .json({ msg: "User already exists with that ID or Email" });
+      return res.status(400).json({ msg: "User already exists" });
     }
 
     const user = await User.create({
@@ -49,23 +44,16 @@ router.post("/signup", async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("🔥 SIGNUP ERROR:", err);
-    res.status(500).json({
-      msg: "Server error",
-      error: err.message,
-    });
+    console.error(err);
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
-/**
- * @route   POST /api/auth/login
- * @desc    Login User or Admin
- */
+/* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
   const { userId, password, role } = req.body;
 
   try {
-    // 🔒 Basic validation
     if (!userId || !password || !role) {
       return res.status(400).json({ msg: "Missing credentials" });
     }
@@ -74,30 +62,16 @@ router.post("/login", async (req, res) => {
     let payload;
 
     if (role === "admin") {
-      // Admin login
       account = await Admin.findOne({ adminId: userId });
-      if (!account) {
-        return res.status(400).json({ msg: "Invalid admin credentials" });
-      }
-
-      const isMatch = await account.matchPassword(password);
-      if (!isMatch) {
+      if (!account || !(await account.matchPassword(password))) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
-
       payload = { admin: { id: account._id } };
     } else {
-      // User login
       account = await User.findOne({ userId });
-      if (!account) {
+      if (!account || !(await account.matchPassword(password))) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
-
-      const isMatch = await account.matchPassword(password);
-      if (!isMatch) {
-        return res.status(400).json({ msg: "Invalid credentials" });
-      }
-
       payload = { user: { id: account._id } };
     }
 
@@ -116,14 +90,8 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (err) {
-    // 🔥 THIS WILL SHOW THE REAL ERROR IN TERMINAL
-    console.error("🔥 LOGIN ERROR STACK TRACE:");
     console.error(err);
-
-    res.status(500).json({
-      msg: "Server error",
-      error: err.message,
-    });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 

@@ -9,12 +9,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* ================= ENV CHECK ================= */
-console.log("Checking Environment Variables...");
+console.log("🔍 Checking Environment Variables...");
 if (!process.env.JWT_SECRET) {
   console.error("❌ FATAL ERROR: JWT_SECRET is not defined.");
   process.exit(1);
 }
-console.log("RAZORPAY_KEY_ID =", process.env.RAZORPAY_KEY_ID || "Not Set");
+console.log("✅ JWT_SECRET loaded");
+console.log(
+  "RAZORPAY_KEY_ID =",
+  process.env.RAZORPAY_KEY_ID ? "Loaded" : "Not Set",
+);
 
 /* ================= DB CONNECTION ================= */
 import connectDB from "./config/db.js";
@@ -34,10 +38,10 @@ import noticeRoutes from "./routes/noticeRoutes.js";
 import maintenanceRoutes from "./routes/maintenanceRoutes.js";
 import mlRoutes from "./routes/mlroutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
-import analyticsRoutes from "./routes/analytics.js"; // ✅ Added missing analytics import
+import analyticsRoutes from "./routes/analytics.js";
 import mlDataRoutes from "./routes/mlData.js";
 
-/* ================= MIDDLEWARE ================= */
+/* ================= AUTH MIDDLEWARE ================= */
 import protect from "./middleware/auth.js";
 
 const app = express();
@@ -47,52 +51,57 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 /* ================= GLOBAL MIDDLEWARE ================= */
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // Vite dev
+      "http://localhost:3000", // CRA (if any)
+    ],
+    credentials: true,
+  }),
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ================= STATIC FILES ================= */
-// Serves uploaded images for marketplace and user profiles
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
-/* ================= API ROUTES ================= */
+/* ================= PUBLIC API ROUTES ================= */
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/admin", adminTicketRoutes);
-app.use("/api/polls", pollRoutes);
-app.use("/api/user", userRoutes);
-app.use("/api/bookings", bookingRoutes);
-app.use("/api/marketplace", marketplaceRoutes);
-app.use("/api/guestpass", guestPassRoutes);
+
+/* ================= PROTECTED API ROUTES ================= */
+// 🔒 Everything below REQUIRES authentication
+app.use("/api/admin", protect, adminRoutes);
+app.use("/api/admin", protect, adminTicketRoutes);
+app.use("/api/user", protect, userRoutes);
+app.use("/api/bookings", protect, bookingRoutes);
+app.use("/api/marketplace", protect, marketplaceRoutes);
+app.use("/api/guestpass", protect, guestPassRoutes);
 app.use("/api/upload", protect, uploadRoutes);
 app.use("/api/payment", protect, paymentRoutes);
-app.use("/api/notices", noticeRoutes);
-app.use("/api/maintenance", maintenanceRoutes);
-app.use("/api/ml", mlRoutes);
-app.use("/api/tickets", ticketRoutes);
-app.use("/api/analytics", analyticsRoutes); // ✅ Mounted analytics routes
+app.use("/api/notices", protect, noticeRoutes);
+app.use("/api/maintenance", protect, maintenanceRoutes);
+app.use("/api/tickets", protect, ticketRoutes);
+app.use("/api/analytics", protect, analyticsRoutes);
+app.use("/api/ml", protect, mlRoutes);
+
+/* ================= MIXED / SPECIAL ROUTES ================= */
+app.use("/api/polls", pollRoutes); // polls may be public
 app.use("/api", mlDataRoutes);
 
 /* ================= TEST ROUTE ================= */
 app.get("/api/test", (req, res) => {
-  res.json({ msg: "Backend working!" });
+  res.json({ msg: "✅ Backend working!" });
 });
 
 /* ================= SERVE FRONTEND ================= */
-// Pointing to the production build of the React app
 app.use(express.static(path.join(__dirname, "../dist")));
 
 /* ================= SPA FALLBACK ================= */
-// Ensures that direct URL access to frontend routes works (Single Page Application)
-app.use((req, res, next) => {
-  if (
-    req.method === "GET" &&
-    !req.path.startsWith("/api/") &&
-    !req.path.startsWith("/uploads/")
-  ) {
+app.get("*", (req, res) => {
+  if (!req.path.startsWith("/api") && !req.path.startsWith("/uploads")) {
     res.sendFile(path.resolve(__dirname, "../dist", "index.html"));
-  } else {
-    next();
   }
 });
 
@@ -109,5 +118,5 @@ app.use((err, req, res, next) => {
 
 /* ================= START SERVER ================= */
 app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

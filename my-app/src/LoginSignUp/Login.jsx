@@ -17,7 +17,6 @@ const Login = () => {
     e.preventDefault();
     setMessage(null);
 
-    // Basic Client-side Validation
     if (!userId.trim() || !password.trim()) {
       setMessage({ type: "error", text: "Please enter both ID and Password" });
       return;
@@ -35,16 +34,18 @@ const Login = () => {
       const res = await api.post("/api/auth/login", payload);
 
       if (res.status === 200 && res.data.token) {
+        // ✅ STORE EVERYTHING FIRST
         localStorage.setItem("token", res.data.token);
+        localStorage.setItem("role", res.data.role);
 
         if (res.data.role === "admin") {
           localStorage.setItem("admin", JSON.stringify(res.data.user));
           localStorage.removeItem("user");
-          navigate("/admin");
+          navigate("/admin", { replace: true });
         } else {
           localStorage.setItem("user", JSON.stringify(res.data.user));
           localStorage.removeItem("admin");
-          navigate("/dashboard");
+          navigate("/dashboard", { replace: true });
         }
       }
     } catch (err) {
@@ -53,7 +54,6 @@ const Login = () => {
         type: "error",
         text: err.response?.data?.msg || "Invalid credentials or server error",
       });
-      // Removed localStorage.clear() to prevent wiping session data on minor errors
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,11 @@ const Login = () => {
 
         {message && (
           <div
-            className={`p-3 rounded mb-4 ${message.type === "error" ? "bg-red-900 text-red-300" : "bg-green-900 text-green-300"}`}
+            className={`p-3 rounded mb-4 ${
+              message.type === "error"
+                ? "bg-red-900 text-red-300"
+                : "bg-green-900 text-green-300"
+            }`}
           >
             {message.text}
           </div>
@@ -119,7 +123,9 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full h-12 bg-[#ff6347] text-white font-bold rounded transition-opacity ${loading ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"}`}
+            className={`w-full h-12 bg-[#ff6347] text-white font-bold rounded ${
+              loading ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
+            }`}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

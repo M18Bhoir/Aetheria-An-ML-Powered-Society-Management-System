@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,6 +6,7 @@ import {
   Link,
   Outlet,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 
 /* ================= ADMIN IMPORTS ================= */
@@ -58,19 +59,43 @@ import "./index.css";
 
 /* ================= PROTECTED ROUTE ================= */
 function ProtectedRoute() {
-  const token = localStorage.getItem("token");
-  const isAdmin = localStorage.getItem("admin");
-  const isUser = localStorage.getItem("user");
+  const location = useLocation();
 
-  if (!token) return <Navigate to="/login" replace />;
+  const [loading, setLoading] = useState(true);
+  const [auth, setAuth] = useState({
+    isAuthenticated: false,
+    role: null,
+  });
 
-  const pathname = window.location.pathname;
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const admin = localStorage.getItem("admin");
+    const user = localStorage.getItem("user");
 
-  if (isAdmin && pathname.startsWith("/dashboard")) {
+    if (token) {
+      setAuth({
+        isAuthenticated: true,
+        role: admin ? "admin" : user ? "user" : null,
+      });
+    }
+
+    setLoading(false);
+  }, []);
+
+  // ⏳ Wait for auth resolution (prevents flicker)
+  if (loading) return null; // or loader
+
+  // 🔒 Not logged in
+  if (!auth.isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // 🛡 Role-based protection
+  if (auth.role === "admin" && location.pathname.startsWith("/dashboard")) {
     return <Navigate to="/admin" replace />;
   }
 
-  if (isUser && pathname.startsWith("/admin")) {
+  if (auth.role === "user" && location.pathname.startsWith("/admin")) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -82,12 +107,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* ===== PUBLIC ===== */}
+        {/* ===== PUBLIC ROUTES ===== */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* ===== PROTECTED ===== */}
+        {/* ===== PROTECTED ROUTES ===== */}
         <Route element={<ProtectedRoute />}>
           {/* ===== USER DASHBOARD ===== */}
           <Route path="/dashboard" element={<UserLayout />}>
