@@ -61,33 +61,21 @@ import "./index.css";
 function ProtectedRoute() {
   const location = useLocation();
 
-  const [loading, setLoading] = useState(true);
-  const [auth, setAuth] = useState({
-    isAuthenticated: false,
-    role: null,
-  });
-
-  useEffect(() => {
+  // Initialize state directly from localStorage to avoid the 1-second delay/flicker
+  const [auth, setAuth] = useState(() => {
     const token = localStorage.getItem("token");
     const admin = localStorage.getItem("admin");
     const user = localStorage.getItem("user");
 
-    if (token) {
-      setAuth({
-        isAuthenticated: true,
-        role: admin ? "admin" : user ? "user" : null,
-      });
-    }
+    return {
+      isAuthenticated: !!token,
+      role: admin ? "admin" : user ? "user" : null,
+    };
+  });
 
-    setLoading(false);
-  }, []);
-
-  // ⏳ Wait for auth resolution (prevents flicker)
-  if (loading) return null; // or loader
-
-  // 🔒 Not logged in
+  // 🔒 Not logged in - check immediately
   if (!auth.isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   // 🛡 Role-based protection

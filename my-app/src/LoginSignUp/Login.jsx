@@ -34,18 +34,19 @@ const Login = () => {
       const res = await api.post("/api/auth/login", payload);
 
       if (res.status === 200 && res.data.token) {
+        // 1. Set all localStorage items immediately
         localStorage.setItem("token", res.data.token);
 
         if (res.data.role === "admin") {
           localStorage.setItem("admin", JSON.stringify(res.data.user));
           localStorage.removeItem("user");
-          // setTimeout ensures localStorage is fully committed before the route changes
-          setTimeout(() => navigate("/admin"), 0);
+          // 2. Use replace: true to prevent back-button loops
+          navigate("/admin", { replace: true });
         } else {
           localStorage.setItem("user", JSON.stringify(res.data.user));
           localStorage.removeItem("admin");
-          // setTimeout ensures localStorage is fully committed before the route changes
-          setTimeout(() => navigate("/dashboard"), 0);
+          // 2. Use replace: true to prevent back-button loops
+          navigate("/dashboard", { replace: true });
         }
       }
     } catch (err) {
