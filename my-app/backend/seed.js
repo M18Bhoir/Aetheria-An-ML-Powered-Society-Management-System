@@ -41,7 +41,7 @@ const importData = async () => {
 
     const usersToInsert = residentData.map((user) => {
       const dummyEmail = `${user.userId.toLowerCase().replace(/ /g, "")}@aetheria.com`;
-      const defaultPassword = "Apsit@123";
+      const defaultPassword = "Aetheria@123";
 
       return {
         ...user,

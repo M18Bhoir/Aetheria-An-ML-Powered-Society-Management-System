@@ -34,18 +34,18 @@ const Login = () => {
       const res = await api.post("/api/auth/login", payload);
 
       if (res.status === 200 && res.data.token) {
-        // ✅ STORE EVERYTHING FIRST
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("role", res.data.role);
 
         if (res.data.role === "admin") {
           localStorage.setItem("admin", JSON.stringify(res.data.user));
           localStorage.removeItem("user");
-          navigate("/admin", { replace: true });
+          // setTimeout ensures localStorage is fully committed before the route changes
+          setTimeout(() => navigate("/admin"), 0);
         } else {
           localStorage.setItem("user", JSON.stringify(res.data.user));
           localStorage.removeItem("admin");
-          navigate("/dashboard", { replace: true });
+          // setTimeout ensures localStorage is fully committed before the route changes
+          setTimeout(() => navigate("/dashboard"), 0);
         }
       }
     } catch (err) {

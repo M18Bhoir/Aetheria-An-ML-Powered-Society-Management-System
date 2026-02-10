@@ -1,6 +1,5 @@
 import express from "express";
 import protect from "../middleware/auth.js";
-import User from "../models/User.js";
 import Dues from "../models/Dues.js";
 
 const router = express.Router();
