@@ -41,6 +41,8 @@ const ticketSchema = new mongoose.Schema(
     otpVerified: { type: Boolean, default: false },
     slaDueAt: { type: Date },
     closedAt: { type: Date },
+    closeOtp: { type: String },
+    closeOtpExpires: { type: Date },
   },
   { timestamps: true },
 );

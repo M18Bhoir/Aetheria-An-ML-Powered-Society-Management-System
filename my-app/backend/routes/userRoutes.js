@@ -1,47 +1,23 @@
 import express from "express";
+import User from "../models/User.js";
 import protect from "../middleware/auth.js";
-import Dues from "../models/Dues.js";
 
 const router = express.Router();
 
-/* ================= 👤 USER PROFILE ================= */
+// @route   GET /api/users/profile
+// @desc    Get logged in user's profile
+// @access  Private
 router.get("/profile", protect, async (req, res) => {
   try {
-    res.json(req.user);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Server error" });
-  }
-});
-
-/* ================= 💰 USER DUES ================= */
-// @route   GET /api/user/dues
-// @desc    Get current user's most recent outstanding due
-// @access  Private
-router.get("/dues", protect, async (req, res) => {
-  try {
-    // ✅ FIX: use _id instead of id
-    const userId = req.user._id;
-
-    const latestDue = await Dues.findOne({
-      user: userId,
-      status: { $in: ["Pending", "Overdue"] },
-    }).sort({ dueDate: 1 });
-
-    if (!latestDue) {
-      return res.json({
-        dues: {
-          amount: 0,
-          status: "Paid",
-          dueDate: null,
-        },
-      });
+    // req.user is attached by the 'protect' middleware
+    const user = await User.findById(req.user._id).select("-password");
+    if (user) {
+      res.json(user);
+    } else {
+      res.status(404).json({ message: "User not found" });
     }
-
-    res.json({ dues: latestDue });
-  } catch (err) {
-    console.error("Error fetching user dues:", err);
-    res.status(500).json({ msg: "Server error" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 

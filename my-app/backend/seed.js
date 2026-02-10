@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "./.env") });
 
 const residentData = [
-  { name: "Manas Bhoir", userId: "A-101" },
+  { name: "Manas Bhoir", userId: "A-101", phone: "+17473460345" }, // Specific number added
   { name: "Aditya Gupta", userId: "A-102" },
   { name: "Mayur Desai", userId: "A-103" },
   { name: "Sujal Daryapurkar", userId: "A-104" },
@@ -39,14 +39,20 @@ const importData = async () => {
     await User.deleteMany(); // Clear old users
     console.log("Purane users delete kar diye gaye...");
 
-    const usersToInsert = residentData.map((user) => {
+    const usersToInsert = residentData.map((user, index) => {
       const dummyEmail = `${user.userId.toLowerCase().replace(/ /g, "")}@aetheria.com`;
       const defaultPassword = "Aetheria@123";
+
+      // Generate a unique dummy phone number if one isn't provided (for unique constraint)
+      // Note: Twilio requires E.164 format (e.g., +91...)
+      const dummyPhone =
+        user.phone || `+9190000000${index.toString().padStart(2, "0")}`;
 
       return {
         ...user,
         email: dummyEmail,
         password: defaultPassword,
+        phone: dummyPhone, // Ensure phone is present for model validation
         role: "user",
       };
     });

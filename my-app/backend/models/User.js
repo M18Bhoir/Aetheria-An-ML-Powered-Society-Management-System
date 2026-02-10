@@ -17,6 +17,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    // 📱 Add phone field for Twilio OTP
+    phone: {
+      type: String,
+      required: [true, "Phone number is required for OTP verification"],
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
