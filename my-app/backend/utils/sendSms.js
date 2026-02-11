@@ -1,11 +1,15 @@
 import twilio from "twilio";
 
-const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+// Updated from TWILIO_SID to TWILIO_ACCOUNT_SID
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN,
+);
 
 export const sendSms = async (to, message) => {
   await client.messages.create({
     body: message,
-    from: process.env.TWILIO_PHONE,
+    from: process.env.TWILIO_PHONE_NUMBER, // Updated from TWILIO_PHONE
     to,
   });
 };
