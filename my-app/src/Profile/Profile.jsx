@@ -2,50 +2,48 @@ import React, { useState, useEffect } from "react";
 import api from "../utils/api";
 
 const Profile = () => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
-      try {
-        const res = await api.get("/api/users/profile");
-        setUserData(res.data);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-      } finally {
-        setLoading(false);
-      }
+      const { data } = await api.get("/user/profile");
+      setFormData({ name: data.name, email: data.email, phone: data.phone });
     };
     fetchProfile();
   }, []);
 
-  if (loading) return <div className="text-white">Loading profile...</div>;
-  if (!userData)
-    return <div className="text-red-500">Could not load profile data.</div>;
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put("/user/profile", formData);
+      alert("Profile and Phone Number Updated!");
+    } catch (err) {
+      alert("Update Failed");
+    }
+  };
 
   return (
-    <div className="p-6 bg-[#1a1a2e] rounded-xl text-white max-w-md mx-auto mt-10 shadow-2xl">
-      <h2 className="text-3xl font-bold text-[#ff6347] mb-6 text-center">
-        My Profile
-      </h2>
-      <div className="space-y-4">
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400">Name:</span>
-          <span className="font-semibold">{userData.name}</span>
-        </div>
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400">User ID:</span>
-          <span className="font-semibold">{userData.userId}</span>
-        </div>
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400">Email:</span>
-          <span className="font-semibold">{userData.email}</span>
-        </div>
-        <div className="flex justify-between border-b border-gray-700 pb-2">
-          <span className="text-gray-400">Phone:</span>
-          <span className="font-semibold">{userData.phone}</span>
-        </div>
-      </div>
+    <div className="profile-container">
+      <h2>My Profile</h2>
+      <form onSubmit={handleUpdate}>
+        <input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        />
+        <input type="email" value={formData.email} disabled />
+        <input
+          type="text"
+          placeholder="Phone (e.g. +918652718080)"
+          value={formData.phone}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+        />
+        <button type="submit">Save Changes</button>
+      </form>
     </div>
   );
 };
