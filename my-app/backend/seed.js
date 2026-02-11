@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, "./.env") });
 
 const residentData = [
-  { name: "Manas Bhoir", userId: "A-101", phone: "+17473460345" }, // Specific number added
+  { name: "Manas Bhoir", userId: "A-101", phone: "+918652718080" }, // Specific number added
   { name: "Aditya Gupta", userId: "A-102" },
   { name: "Mayur Desai", userId: "A-103" },
   { name: "Sujal Daryapurkar", userId: "A-104" },
