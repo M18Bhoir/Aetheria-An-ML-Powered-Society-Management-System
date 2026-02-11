@@ -84,58 +84,56 @@ export default function AdminHome() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // my-app/src/Dashboard/AdminHome.jsx
+
   useEffect(() => {
     const fetchAllData = async () => {
-      try {
-        setIsLoading(true);
-        // Fetch General Stats
-        const statsRes = await api.get("/api/admin/dashboard-stats");
-        setDashboardData(statsRes.data);
+      // Start all requests simultaneously
+      const statsPromise = api.get("/api/admin/dashboard-stats");
+      const mlPromise = api.get("/api/analytics/maintenance-prediction");
 
-        // Fetch ML Maintenance Predictions
-        try {
-          const mlRes = await api.get("/api/analytics/maintenance-prediction");
-          // Combine actual and predicted into one array for the Chart component
-          // my-app/src/Dashboard/AdminHome.jsx
+      // Handle Stats separately so they show up as soon as they are ready
+      statsPromise
+        .then((res) => {
+          setDashboardData(res.data);
+          if (maintenanceData.length > 0) setIsLoading(false);
+        })
+        .catch((err) => setError("Failed to load dashboard data"));
 
-          // Update the combinedData logic inside fetchAllData:
+      // Handle ML data without blocking the rest of the UI
+      mlPromise
+        .then((mlRes) => {
           const combinedData = [
             ...(mlRes.data.actual || []).map((d) => ({
               ds: d.ds,
-              amount: d.y, // Map 'y' to 'amount'
+              amount: d.y,
               type: "actual",
             })),
             ...(mlRes.data.predicted || []).map((d) => ({
               ds: new Date(d.ds).toISOString().split("T")[0],
-              amount: d.yhat, // Map 'yhat' to 'amount'
+              amount: d.yhat,
               type: "predicted",
             })),
           ];
           setMaintenanceData(combinedData);
-        } catch (mlErr) {
+        })
+        .catch((mlErr) => {
           console.error("ML Prediction fetch error:", mlErr);
-          // Don't fail the whole dashboard if only ML fails
-        }
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-        setError("Failed to load dashboard data");
-      } finally {
-        setIsLoading(false);
-      }
+        })
+        .finally(() => {
+          setIsLoading(false); // Stop loading regardless of ML success
+        });
     };
+
     fetchAllData();
   }, []);
 
   /* -------------------- Loading / Error -------------------- */
 
-  if (isLoading) {
-    return (
-      <div className="text-center p-6 text-gray-500">
-        Loading Admin Dashboard...
-      </div>
-    );
+  if (isLoading && !dashboardData) {
+    // Only block if we have NO data at all
+    return <div className="text-center p-6 text-gray-500">Loading...</div>;
   }
-
   if (error) {
     return <div className="text-center p-6 text-red-500">{error}</div>;
   }
