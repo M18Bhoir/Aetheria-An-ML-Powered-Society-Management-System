@@ -13,7 +13,7 @@ import {
   Label,
 } from "recharts";
 
-/* ================= HELPERS ================= */
+/* ================= CUSTOM TOOLTIP ================= */
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -30,7 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-/* ================= MAIN COMPONENT ================= */
+/* ================= MAIN CHART COMPONENT ================= */
 
 export default function Chart({ data = [], type, dataKey, xAxis }) {
   if (!data.length) {
@@ -45,14 +45,9 @@ export default function Chart({ data = [], type, dataKey, xAxis }) {
   const predictedData = data.filter((d) => d.type === "predicted");
 
   return (
-    <ResponsiveContainer
-      width="100%"
-      height="100%"
-      minHeight={250} // ✅ prevents -1 height
-      aspect={2} // ✅ fallback if height collapses
-    >
-      {/* ================= LINE (Actual vs Predicted) ================= */}
-      {type === "line" && (
+    <ResponsiveContainer width="100%" height="100%" minHeight={250}>
+      {/* ================= LINE ================= */}
+      {type === "line" ? (
         <LineChart
           data={data}
           margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
@@ -73,35 +68,44 @@ export default function Chart({ data = [], type, dataKey, xAxis }) {
 
           <Tooltip content={<CustomTooltip />} />
 
-          {/* 🔵 ACTUAL */}
-          <Line
-            data={actualData}
-            type="monotone"
-            dataKey={dataKey}
-            name="Actual"
-            stroke="#4f46e5"
-            strokeWidth={2}
-            dot={{ r: 3 }}
-            isAnimationActive={false}
-          />
-
-          {/* 🔴 PREDICTED */}
-          <Line
-            data={predictedData}
-            type="monotone"
-            dataKey={dataKey}
-            name="Predicted"
-            stroke="#ef4444"
-            strokeWidth={2}
-            strokeDasharray="6 4"
-            dot={{ r: 4 }}
-            isAnimationActive={false}
-          />
+          {actualData.length > 0 || predictedData.length > 0 ? (
+            <>
+              <Line
+                data={actualData}
+                type="monotone"
+                dataKey={dataKey}
+                name="Actual"
+                stroke="#4f46e5"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                isAnimationActive={false}
+              />
+              <Line
+                data={predictedData}
+                type="monotone"
+                dataKey={dataKey}
+                name="Predicted"
+                stroke="#ef4444"
+                strokeWidth={2}
+                strokeDasharray="6 4"
+                dot={{ r: 4 }}
+                isAnimationActive={false}
+              />
+            </>
+          ) : (
+            <Line
+              type="monotone"
+              dataKey={dataKey}
+              stroke="#4f46e5"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+            />
+          )}
         </LineChart>
-      )}
+      ) : null}
 
       {/* ================= BAR ================= */}
-      {type === "bar" && (
+      {type === "bar" ? (
         <BarChart
           data={data}
           margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
@@ -112,10 +116,10 @@ export default function Chart({ data = [], type, dataKey, xAxis }) {
           <Tooltip />
           <Bar dataKey={dataKey} fill="#22c55e" />
         </BarChart>
-      )}
+      ) : null}
 
       {/* ================= AREA ================= */}
-      {type === "area" && (
+      {type === "area" ? (
         <AreaChart
           data={data}
           margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
@@ -131,7 +135,7 @@ export default function Chart({ data = [], type, dataKey, xAxis }) {
             fill="#fde68a"
           />
         </AreaChart>
-      )}
+      ) : null}
     </ResponsiveContainer>
   );
 }
