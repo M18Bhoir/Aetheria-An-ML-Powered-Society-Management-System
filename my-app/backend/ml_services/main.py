@@ -2,6 +2,12 @@ from fastapi import FastAPI, HTTPException
 from typing import List, Dict
 import pandas as pd
 from prophet import Prophet
+import joblib
+import os
+import uvicorn
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'ml_pipeline_registry.pkl')
 
 app = FastAPI(
     title="Maintenance Prediction Service",
@@ -77,21 +83,37 @@ def predict_maintenance(data: List[Dict]):
 
 # backend/ml_services/main.py
 
+
+# ... other imports
+
+# Load your model at startup
+try:
+    equipment_model = joblib.load(MODEL_PATH)
+except:
+    equipment_model = None
+
 @app.post("/predict-equipment-failure")
 def predict_failure(data: List[Dict]):
     try:
+        if not equipment_model:
+            raise HTTPException(status_code=500, detail="ML Model file not found")
+
         df = pd.DataFrame(data)
-        # Reusing Prophet for time-series sensor data (e.g., vibration/temp)
-        model = Prophet(yearly_seasonality=False, weekly_seasonality=True)
-        model.fit(df)
         
-        future = model.make_future_dataframe(periods=7, freq="D")
-        forecast = model.predict(future)
+        # 1. Standardize date format for the model
+        df["ds"] = pd.to_datetime(df["ds"])
         
-        # Identify "Risk Zones" where predicted value crosses a safety threshold
-        # Example threshold: 75 units (e.g., 75°C)
+        # 2. Use your model to predict (Logic depends on your specific model)
+        # If your model is a Prophet model:
+        forecast = equipment_model.predict(df)
+        
+        # 3. Identify Risk Zones (e.g., if predicted value > 75)
         forecast['failure_risk'] = forecast['yhat'] > 75 
         
+        # Return the last 7 days of predictions formatted for the frontend
         return forecast[['ds', 'yhat', 'failure_risk']].tail(7).to_dict(orient="records")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

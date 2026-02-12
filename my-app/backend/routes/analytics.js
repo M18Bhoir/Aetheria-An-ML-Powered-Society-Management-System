@@ -2,6 +2,10 @@ import express from "express";
 import axios from "axios";
 import adminAuth from "../middleware/adminAuth.js";
 import Billing from "../models/Billing.js";
+import Complaint from "../models/Complaint.js"; // Added
+import Booking from "../models/Booking.js"; // Added
+import Visitor from "../models/Visitor.js"; // Added
+import Maintenance from "../models/Maintenance.js"; // Added
 
 const router = express.Router();
 
@@ -102,13 +106,23 @@ router.get("/maintenance-collection", adminAuth, async (req, res) => {
 
 router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
   try {
-    // 1. Fetch sensor historical logs (Vibration, Temp, etc.)
+    // 1. Fetch historical sensor logs (vibration, temp, etc.)
     const logs = await Maintenance.find({ type: "Sensor_Log" }).sort({
       date: 1,
     });
-    const formattedData = logs.map((log) => ({ ds: log.date, y: log.value }));
 
-    // 2. Call ML Service
+    if (logs.length < 2) {
+      return res
+        .status(400)
+        .json({ message: "Insufficient sensor data for prediction" });
+    }
+
+    const formattedData = logs.map((log) => ({
+      ds: log.date,
+      y: log.value,
+    }));
+
+    // 2. Forward data to the FastAPI service running on port 8000
     const prediction = await axios.post(
       "http://localhost:8000/predict-equipment-failure",
       formattedData,
@@ -116,10 +130,12 @@ router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
 
     res.json(prediction.data);
   } catch (error) {
-    res.status(500).json({ message: "Failure prediction failed" });
+    console.error("ML Error:", error.message);
+    res
+      .status(500)
+      .json({ message: "Equipment failure prediction service unavailable" });
   }
 });
-
 router.get("/complaints-by-category", adminAuth, async (req, res) => {
   try {
     const data = await Complaint.aggregate([
