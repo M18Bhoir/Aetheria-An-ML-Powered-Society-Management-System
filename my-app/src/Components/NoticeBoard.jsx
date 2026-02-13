@@ -1,41 +1,46 @@
-import React from 'react';
+import React from "react";
 
 function NoticeBoard() {
-  // This is mock data. You would fetch this from your API.
   const notices = [
-    { id: 1, title: 'Tower A Maintenance Day', date: 'Oct 25' },
-    { id: 2, title: 'Quarterly Community Meeting', date: 'Oct 28' },
-    { id: 3, title: 'Pest Control Service', date: 'Nov 02' },
+    {
+      id: 1,
+      title: "Tower A Maintenance Day",
+      date: "Oct 25",
+      tag: "Maintenance",
+    },
+    {
+      id: 2,
+      title: "Quarterly Community Meeting",
+      date: "Oct 28",
+      tag: "Meeting",
+    },
+    { id: 3, title: "Pest Control Service", date: "Nov 02", tag: "Service" },
   ];
 
   return (
-    // Notice Board Container:
-    // w-80 = fixed 80-unit width (320px)
-    // h-screen = full viewport height
-    // bg-gray-50 = very light gray background
-    // p-6 = padding
-    // border-l = left border
-    <aside className="w-80 h-screen bg-gray-50 p-6 border-l border-gray-200">
-      
-      {/* Header */}
-      <h3 className="text-2xl font-semibold text-gray-800 mb-6">
-        Notices 📣
-      </h3>
+    <aside className="w-80 h-screen bg-[#0a0f1c]/40 backdrop-blur-lg p-6 border-l border-white/5 overflow-y-auto">
+      <div className="flex items-center justify-between mb-8">
+        <h3 className="text-xl font-bold text-slate-100">Notices</h3>
+        <span className="flex h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+      </div>
 
-      {/* List of Notices */}
       <ul className="space-y-4">
-        {notices.map(notice => (
-          // Notice Item Card
-          <li 
-            key={notice.id} 
-            className="p-4 bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200"
+        {notices.map((notice) => (
+          <li
+            key={notice.id}
+            className="group p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all duration-300"
           >
-            <strong className="block text-md font-medium text-gray-700">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-[10px] uppercase tracking-widest text-blue-400 font-bold">
+                {notice.tag}
+              </span>
+              <span className="text-xs text-slate-500 font-medium">
+                {notice.date}
+              </span>
+            </div>
+            <p className="text-sm text-slate-200 font-medium group-hover:text-white transition-colors">
               {notice.title}
-            </strong>
-            <span className="text-sm text-gray-500">
-              {notice.date}
-            </span>
+            </p>
           </li>
         ))}
       </ul>
