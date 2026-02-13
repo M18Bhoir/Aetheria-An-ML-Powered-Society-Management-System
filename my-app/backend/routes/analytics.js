@@ -2,14 +2,16 @@ import express from "express";
 import axios from "axios";
 import adminAuth from "../middleware/adminAuth.js";
 import Billing from "../models/Billing.js";
-import Complaint from "../models/Complaint.js"; // Added
-import Booking from "../models/Booking.js"; // Added
-import Visitor from "../models/Visitor.js"; // Added
-import Maintenance from "../models/Maintenance.js"; // Added
+import Complaint from "../models/Complaint.js";
+import Booking from "../models/Booking.js";
+import Visitor from "../models/Visitor.js";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
-// Internal helper to get ML-ready data without circular HTTP calls
+/* =========================================================
+   🔁 INTERNAL HELPER - MAINTENANCE HISTORY
+========================================================= */
 const getMaintenanceHistory = async () => {
   return await Billing.aggregate([
     {
@@ -36,15 +38,13 @@ const getMaintenanceHistory = async () => {
   ]);
 };
 
-/* ============================
-   🤖 Maintenance Prediction (ML)
-   ============================ */
+/* =========================================================
+   🤖 MAINTENANCE PREDICTION
+========================================================= */
 router.get("/maintenance-prediction", async (req, res) => {
   try {
-    // 1️⃣ Fetch data directly from DB instead of calling localhost:5000
     const historyData = await getMaintenanceHistory();
 
-    // 2️⃣ Send data to the standalone FastAPI Prophet service (running on port 8000)
     const prediction = await axios.post(
       "http://localhost:8000/predict-maintenance",
       historyData,
@@ -56,13 +56,13 @@ router.get("/maintenance-prediction", async (req, res) => {
     });
   } catch (error) {
     console.error("Prophet prediction error:", error.message);
-    res.status(500).json({ message: "Prophet prediction failed" });
+    res.status(500).json({ message: "Maintenance prediction failed" });
   }
 });
 
-/* ============================
-   📊 Maintenance Collection
-   ============================ */
+/* =========================================================
+   📊 MAINTENANCE COLLECTION STATS
+========================================================= */
 router.get("/maintenance-collection", adminAuth, async (req, res) => {
   try {
     const data = await Billing.aggregate([
@@ -98,31 +98,40 @@ router.get("/maintenance-collection", adminAuth, async (req, res) => {
       },
       { $sort: { month: 1 } },
     ]);
+
     res.status(200).json(data);
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch maintenance analytics" });
   }
 });
 
+/* =========================================================
+   ⚙️ EQUIPMENT FAILURE PREDICTION
+========================================================= */
 router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
   try {
-    // 1. Fetch historical sensor logs (vibration, temp, etc.)
-    const logs = await Maintenance.find({ type: "Sensor_Log" }).sort({
-      date: 1,
-    });
+    const rawData = await mongoose.connection.db
+      .collection("equipment_failure")
+      .find({})
+      .sort({ _id: 1 }) // chronological order
+      .limit(30)
+      .toArray();
 
-    if (logs.length < 2) {
-      return res
-        .status(400)
-        .json({ message: "Insufficient sensor data for prediction" });
+    if (rawData.length === 0) {
+      return res.status(404).json({ message: "No equipment data found" });
     }
 
-    const formattedData = logs.map((log) => ({
-      ds: log.date,
-      y: log.value,
+    const formattedData = rawData.map((item, index) => ({
+      ds: new Date(
+        Date.now() - (rawData.length - index) * 86400000,
+      ).toISOString(),
+      y: Number(item.vibration_level ?? 0),
+      temperature_avg: Number(item.temperature_avg ?? 0),
+      equipment_age_days: Number(item.equipment_age_days ?? 0),
     }));
 
-    // 2. Forward data to the FastAPI service running on port 8000
+    console.log("Sending to ML service:", formattedData);
+
     const prediction = await axios.post(
       "http://localhost:8000/predict-equipment-failure",
       formattedData,
@@ -130,96 +139,56 @@ router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
 
     res.json(prediction.data);
   } catch (error) {
-    console.error("ML Error:", error.message);
-    res
-      .status(500)
-      .json({ message: "Equipment failure prediction service unavailable" });
+    console.error("ML Prediction Error:", error.message);
+    res.status(500).json({ message: "Equipment failure prediction failed" });
   }
 });
+
+/* =========================================================
+   📊 OTHER ANALYTICS ROUTES
+========================================================= */
 router.get("/complaints-by-category", adminAuth, async (req, res) => {
   try {
     const data = await Complaint.aggregate([
-      {
-        $group: {
-          _id: "$category",
-          count: { $sum: 1 },
-        },
-      },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-      {
-        $project: {
-          _id: 0,
-          category: "$_id",
-          count: 1,
-        },
-      },
+      { $project: { _id: 0, category: "$_id", count: 1 } },
     ]);
     res.status(200).json(data);
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: "Failed to fetch complaint analytics" });
   }
 });
 
-/**
- * @route   GET /api/analytics/amenity-peak-hours
- * @desc    Get booking counts grouped by hour to identify peak usage times
- * @access  Private (Admin)
- */
 router.get("/amenity-peak-hours", adminAuth, async (req, res) => {
   try {
     const data = await Booking.aggregate([
-      {
-        $group: {
-          _id: { $hour: "$startTime" },
-          bookings: { $sum: 1 },
-        },
-      },
+      { $group: { _id: { $hour: "$startTime" }, bookings: { $sum: 1 } } },
       { $sort: { _id: 1 } },
-      {
-        $project: {
-          _id: 0,
-          hour: "$_id",
-          bookings: 1,
-        },
-      },
+      { $project: { _id: 0, hour: "$_id", bookings: 1 } },
     ]);
     res.status(200).json(data);
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: "Failed to fetch amenity analytics" });
   }
 });
 
-/**
- * @route   GET /api/analytics/visitor-trends
- * @desc    Get daily visitor counts to track society entry trends
- * @access  Private (Admin)
- */
 router.get("/visitor-trends", adminAuth, async (req, res) => {
   try {
     const data = await Visitor.aggregate([
       {
         $group: {
-          _id: {
-            $dateToString: {
-              format: "%Y-%m-%d",
-              date: "$checkIn",
-            },
-          },
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$checkIn" } },
           visitors: { $sum: 1 },
         },
       },
       { $sort: { _id: 1 } },
-      {
-        $project: {
-          _id: 0,
-          date: "$_id",
-          visitors: 1,
-        },
-      },
+      { $project: { _id: 0, date: "$_id", visitors: 1 } },
     ]);
     res.status(200).json(data);
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: "Failed to fetch visitor analytics" });
   }
 });
+
 export default router;
