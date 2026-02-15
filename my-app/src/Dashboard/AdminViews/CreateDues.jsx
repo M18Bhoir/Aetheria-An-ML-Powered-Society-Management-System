@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import api from "../../utils/api";
 
 function CreateDues() {
@@ -42,36 +42,51 @@ function CreateDues() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <button
-        onClick={() => navigate("/admin")}
-        className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4"
-      >
-        <ArrowLeft size={16} className="mr-1" />
-        Back to Dashboard
-      </button>
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Create New Due
-        </h2>
+    <div className="max-w-2xl mx-auto space-y-6 animate-fade-in-up">
+      {/* Header & Back Button */}
+      <div>
+        <button
+          onClick={() => navigate("/admin")}
+          className="flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft size={16} className="mr-1" />
+          Back to Dashboard
+        </button>
+        <h1 className="text-3xl font-bold text-white">Create New Due</h1>
+        <p className="text-gray-400 text-sm mt-1">
+          Assign maintenance or penalty charges to a resident.
+        </p>
+      </div>
+
+      {/* Glass Form Container */}
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-xl p-8">
+        {/* Message Alert */}
         {message && (
           <div
-            className={`p-4 rounded-md mb-6 text-sm ${
+            className={`flex items-center p-4 rounded-xl mb-6 border ${
               message.type === "error"
-                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                ? "bg-red-500/10 border-red-500/20 text-red-300"
+                : "bg-green-500/10 border-green-500/20 text-green-300"
             }`}
           >
-            {message.text}
+            {message.type === "error" ? (
+              <AlertCircle size={20} className="mr-3 shrink-0" />
+            ) : (
+              <CheckCircle size={20} className="mr-3 shrink-0" />
+            )}
+            <span className="text-sm font-medium">{message.text}</span>
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-5">
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* User ID Field */}
           <div>
             <label
               htmlFor="userId"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-300 mb-2"
             >
-              User ID (e.g., A-101)
+              User ID{" "}
+              <span className="text-gray-500 text-xs">(e.g., A-101)</span>
             </label>
             <input
               type="text"
@@ -79,88 +94,129 @@ function CreateDues() {
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               required
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="A-101"
+              className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              placeholder="Enter User ID"
             />
           </div>
-          <div>
-            <label
-              htmlFor="amount"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              Amount (₹)
-            </label>
-            <input
-              type="number"
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              min="0"
-              step="0.01"
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., 2500"
-            />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Amount Field */}
+            <div>
+              <label
+                htmlFor="amount"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Amount (₹)
+              </label>
+              <input
+                type="number"
+                id="amount"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                min="0"
+                step="0.01"
+                className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                placeholder="0.00"
+              />
+            </div>
+
+            {/* Due Date Field */}
+            <div>
+              <label
+                htmlFor="dueDate"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
+                Due Date
+              </label>
+              <input
+                type="date"
+                id="dueDate"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                required
+                className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all [color-scheme:dark]"
+              />
+            </div>
           </div>
-          <div>
-            <label
-              htmlFor="dueDate"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-            >
-              Due Date
-            </label>
-            <input
-              type="date"
-              id="dueDate"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              required
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+
+          {/* Type Dropdown */}
           <div>
             <label
               htmlFor="type"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-300 mb-2"
             >
               Type
             </label>
-            <select
-              id="type"
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="Maintenance">Maintenance</option>
-              <option value="Event">Event</option>
-              <option value="Penalty">Penalty</option>
-              <option value="Other">Other</option>
-            </select>
+            <div className="relative">
+              <select
+                id="type"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all appearance-none cursor-pointer"
+              >
+                <option value="Maintenance" className="bg-gray-900">
+                  Maintenance
+                </option>
+                <option value="Event" className="bg-gray-900">
+                  Event
+                </option>
+                <option value="Penalty" className="bg-gray-900">
+                  Penalty
+                </option>
+                <option value="Other" className="bg-gray-900">
+                  Other
+                </option>
+              </select>
+              {/* Custom Arrow for select */}
+              <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-400">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </div>
+            </div>
           </div>
+
+          {/* Notes Field */}
           <div>
             <label
               htmlFor="notes"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              className="block text-sm font-medium text-gray-300 mb-2"
             >
-              Notes (Optional)
+              Notes <span className="text-gray-500 text-xs">(Optional)</span>
             </label>
             <textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows="3"
-              className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder="e.g., For October 2025"
+              className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
+              placeholder="Add any relevant details..."
             />
           </div>
+
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-              ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"} 
-              focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 focus:ring-blue-500`}
+            className={`w-full py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white tracking-wide transition-all duration-300 transform hover:-translate-y-0.5
+              ${
+                loading
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 border border-transparent hover:border-blue-400/30"
+              }`}
           >
-            {loading ? "Submitting..." : "Create Due"}
+            {loading ? "Processing..." : "Create Due"}
           </button>
         </form>
       </div>

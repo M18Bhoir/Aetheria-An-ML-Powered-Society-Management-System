@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, XCircle } from "lucide-react";
+import { ArrowLeft, Check, XCircle, User, Calendar, Key } from "lucide-react";
 import api from "../../utils/api";
 
 function ManageGuestRequests() {
@@ -56,110 +56,138 @@ function ManageGuestRequests() {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusStyle = (status) => {
     switch (status) {
       case "Approved":
-        return "text-green-600 dark:text-green-400";
+        return "bg-green-500/20 text-green-300 border-green-500/30";
       case "Pending":
-        return "text-yellow-600 dark:text-yellow-400";
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
       case "Rejected":
       case "Revoked":
-        return "text-red-600 dark:text-red-400";
+        return "bg-red-500/20 text-red-300 border-red-500/30";
       case "Cancelled":
       case "Expired":
-        return "text-gray-500 dark:text-gray-400";
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
       default:
-        return "text-gray-700 dark:text-gray-300";
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <button
-        onClick={() => navigate("/admin")}
-        className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline mb-4"
-      >
-        <ArrowLeft size={16} className="mr-1" />
-        Back to Dashboard
-      </button>
+    <div className="max-w-7xl mx-auto space-y-6 animate-fade-in-up">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <button
+            onClick={() => navigate("/admin")}
+            className="flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-2"
+          >
+            <ArrowLeft size={16} className="mr-1" />
+            Back to Dashboard
+          </button>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <Key className="text-blue-400" size={32} />
+            Guest Passes
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Manage entry requests for visitors.
+          </p>
+        </div>
+      </div>
 
-      <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-          Manage Guest Pass Requests
-        </h2>
+      {/* Glass Container */}
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-xl overflow-hidden min-h-[500px]">
+        <div className="p-6 border-b border-white/10 bg-white/5 flex justify-between items-center">
+          <h3 className="text-lg font-bold text-white">All Requests</h3>
+          <span className="text-xs text-gray-400 bg-white/10 px-2 py-1 rounded-full">
+            {passes.length} requests
+          </span>
+        </div>
 
         {loading && (
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="p-8 text-center text-gray-400 animate-pulse">
             Loading requests...
           </p>
         )}
-        {error && <p className="text-red-500 dark:text-red-300">{error}</p>}
+        {error && <p className="p-8 text-center text-red-400">{error}</p>}
 
         {!loading && !error && passes.length === 0 && (
-          <p className="text-center text-gray-500 dark:text-gray-400">
-            No guest pass requests found.
-          </p>
+          <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+            <User size={48} className="mb-4 opacity-20" />
+            <p>No guest pass requests found.</p>
+          </div>
         )}
 
         {!loading && !error && passes.length > 0 && (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b dark:border-slate-700">
-                <tr className="text-left text-slate-500 dark:text-slate-400">
-                  <th className="pb-3 p-2">Guest</th>
-                  <th className="pb-3 p-2">Resident (Flat)</th>
-                  <th className="pb-3 p-2">Visit Date</th>
-                  <th className="pb-3 p-2">Status</th>
-                  <th className="pb-3 p-2">Code</th>
-                  <th className="pb-3 p-2 text-center">Actions</th>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-gray-400 text-xs uppercase tracking-wider bg-black/20">
+                  <th className="p-4 font-semibold">Guest</th>
+                  <th className="p-4 font-semibold">Resident (Flat)</th>
+                  <th className="p-4 font-semibold">Visit Date</th>
+                  <th className="p-4 font-semibold">Status</th>
+                  <th className="p-4 font-semibold">Code</th>
+                  <th className="p-4 font-semibold text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-gray-300 text-sm divide-y divide-white/5">
                 {passes.map((pass) => (
                   <tr
                     key={pass._id}
-                    className="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 align-top"
+                    className="hover:bg-white/5 transition-colors duration-200 group"
                   >
-                    <td className="py-3 p-2 font-medium text-gray-800 dark:text-gray-200">
+                    <td className="p-4 font-medium text-white">
                       {pass.guestName}
                     </td>
-                    <td className="py-3 p-2 text-gray-600 dark:text-gray-300">
-                      {pass.requestedBy?.name} ({pass.requestedBy?.userId})
+                    <td className="p-4 text-gray-400">
+                      <span className="text-white">
+                        {pass.requestedBy?.name}
+                      </span>
+                      <span className="text-xs block opacity-50">
+                        {pass.requestedBy?.userId}
+                      </span>
                     </td>
-                    <td className="py-3 p-2 text-gray-600 dark:text-gray-300">
-                      {new Date(pass.visitDate).toLocaleDateString()}
+                    <td className="p-4 text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} className="opacity-50" />
+                        {new Date(pass.visitDate).toLocaleDateString()}
+                      </div>
                     </td>
-                    <td
-                      className={`py-3 p-2 font-medium ${getStatusColor(pass.status)}`}
-                    >
-                      {pass.status}
+                    <td className="p-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-bold border ${getStatusStyle(pass.status)}`}
+                      >
+                        {pass.status}
+                      </span>
                     </td>
-                    <td className="py-3 p-2 font-mono text-blue-600 dark:text-blue-400">
-                      {pass.code || "N/A"}
+                    <td className="p-4 font-mono text-blue-300 tracking-wider">
+                      {pass.code || "---"}
                     </td>
-                    <td className="py-3 p-2 text-center">
-                      {pass.status === "Pending" && (
+                    <td className="p-4 text-center">
+                      {pass.status === "Pending" ? (
                         <div className="flex justify-center space-x-2">
                           <button
                             onClick={() => handleApprove(pass._id)}
                             disabled={updating === pass._id}
-                            className="p-1 text-green-600 hover:text-green-800 disabled:opacity-50"
+                            className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
                             title="Approve"
                           >
-                            <Check size={18} />
+                            <Check size={16} />
                           </button>
                           <button
                             onClick={() => handleReject(pass._id)}
                             disabled={updating === pass._id}
-                            className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50"
+                            className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
                             title="Reject"
                           >
-                            <XCircle size={18} />
+                            <XCircle size={16} />
                           </button>
                         </div>
-                      )}
-                      {pass.status !== "Pending" && (
-                        <span className="text-xs text-gray-400">Handled</span>
+                      ) : (
+                        <span className="text-xs text-gray-500 italic">
+                          No actions
+                        </span>
                       )}
                     </td>
                   </tr>

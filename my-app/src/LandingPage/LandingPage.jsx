@@ -1,8 +1,7 @@
 // LandingPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; 
-// --- UPDATED: Use relative paths ---
+import { motion } from "framer-motion";
 import building_icon from "../Assets/building.png";
 import frontendImage from "../Assets/frontend1.png";
 
@@ -16,34 +15,20 @@ const fadeIn = (delay = 0) => ({
   },
 });
 
-// --- Reusable Card Components ---
+// --- Reusable Glass Card ---
 const Card = ({ title, description }) => (
   <motion.div
     variants={fadeIn(0.2)}
     initial="hidden"
     whileInView="show"
     viewport={{ once: true }}
-    className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-500 dark:bg-gray-700"
+    // Glassmorphism Styles
+    className="bg-white/10 dark:bg-black/40 backdrop-blur-md border border-white/20 p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 text-left"
   >
-    <h2 className="text-xl font-semibold mb-2 dark:text-white">{title}</h2>
-    <p className="text-gray-600 dark:text-gray-300">{description}</p>
-  </motion.div>
-);
-
-const NumberedCard = ({ number, title, description }) => (
-  <motion.div
-    variants={fadeIn(0.3)}
-    initial="hidden"
-    whileInView="show"
-    viewport={{ once: true }}
-    className="bg-white p-6 rounded-2xl shadow-lg flex flex-col items-start space-y-4 dark:bg-gray-700"
-  >
-    <div className="flex items-center space-x-4">
-      <span className="text-4xl font-bold text-blue-500">{number}</span>
-      <hr className="border-t-2 border-blue-500 w-12" />
-    </div>
-    <h3 className="text-lg font-semibold mt-2 dark:text-white">{title}</h3>
-    <p className="text-gray-600 dark:text-gray-300">{description}</p>
+    <h2 className="text-xl font-bold mb-3 text-white">{title}</h2>
+    <p className="text-gray-200 dark:text-gray-300 font-light leading-relaxed">
+      {description}
+    </p>
   </motion.div>
 );
 
@@ -52,25 +37,25 @@ const Header = ({ isDarkMode, toggleTheme }) => {
   const navigate = useNavigate();
 
   return (
-    <header className="flex justify-between items-center py-4 px-8 bg-white shadow-md fixed top-0 w-full z-50 dark:bg-gray-800 dark:text-white">
-      <h1 className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+    <header className="fixed top-4 left-0 right-0 mx-auto w-[95%] max-w-7xl z-50 rounded-2xl bg-white/10 dark:bg-black/40 backdrop-blur-lg border border-white/20 shadow-lg px-8 py-4 flex justify-between items-center transition-all">
+      <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
         Aetheria
       </h1>
       <nav className="flex items-center space-x-4">
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition duration-300 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="p-2 rounded-full text-white hover:bg-white/10 transition duration-300"
         >
           {isDarkMode ? "🌞" : "🌙"}
         </button>
         <button
-          className="py-2 px-4 rounded-full text-blue-600 hover:bg-blue-50 transition duration-300 dark:text-blue-400 dark:hover:bg-blue-900"
+          className="py-2 px-6 rounded-full text-white border border-white/30 hover:bg-white/10 transition duration-300 font-medium"
           onClick={() => navigate("/login")}
         >
           Login
         </button>
         <button
-          className="py-2 px-4 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition duration-300 dark:bg-blue-400 dark:hover:bg-blue-500"
+          className="py-2 px-6 rounded-full bg-blue-600/80 hover:bg-blue-600 text-white backdrop-blur-sm shadow-lg transition duration-300 font-medium"
           onClick={() => navigate("/signup")}
         >
           Sign Up
@@ -83,16 +68,20 @@ const Header = ({ isDarkMode, toggleTheme }) => {
 // --- Main Content ---
 const Main = () => {
   return (
-    <main className="pt-28">
+    <main className="pt-32 relative overflow-hidden">
+      {/* Background blobs for glass effect */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/30 rounded-full blur-[128px] pointer-events-none"></div>
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/30 rounded-full blur-[128px] pointer-events-none"></div>
+
       {/* Hero Section */}
-      <section className="flex flex-col justify-center items-center text-center pb-20 px-8 w-full">
+      <section className="flex flex-col justify-center items-center text-center pb-24 px-8 w-full relative z-10">
         <motion.p
           variants={fadeIn(0.1)}
           initial="hidden"
           animate="show"
-          className="text-lg text-blue-600 font-semibold mb-2"
+          className="text-lg text-blue-300 font-semibold mb-2 uppercase tracking-wider"
         >
-          Welcome to Aetheria. Please log in or sign up to continue.
+          Welcome to Aetheria
         </motion.p>
         <motion.img
           variants={fadeIn(0.2)}
@@ -100,41 +89,46 @@ const Main = () => {
           animate="show"
           src={building_icon}
           alt="Building icon"
-          className="mx-auto my-8 w-56"
+          className="mx-auto my-8 w-56 drop-shadow-2xl"
         />
+        <motion.h1
+          variants={fadeIn(0.25)}
+          initial="hidden"
+          animate="show"
+          className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight"
+        >
+          Community Living, <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+            Reimagined.
+          </span>
+        </motion.h1>
         <motion.p
           variants={fadeIn(0.3)}
           initial="hidden"
           animate="show"
-          className="text-gray-600 leading-relaxed text-lg max-w-5xl dark:text-gray-400"
+          className="text-gray-200 leading-relaxed text-lg md:text-xl max-w-3xl mx-auto font-light"
         >
-          Welcome to the Future of community living. Aetheria is an AI-powered
-          society management system designed to streamline and automate
+          An AI-powered society management system designed to streamline
           residential operations, improve transparency, and enhance engagement.
         </motion.p>
       </section>
 
-      {/* Challenge Section */}
-      <section className="bg-gray-100 py-20 px-8 dark:bg-gray-800 w-full">
-        <div className="w-full text-center">
-          <motion.h2
+      {/* Challenge Section (Bento Grid) */}
+      <section className="py-20 px-8 w-full relative z-10">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
             variants={fadeIn(0.1)}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="text-sm uppercase text-gray-500 font-bold tracking-widest mb-2 dark:text-gray-400"
+            className="text-center mb-16"
           >
-            The Challenge
-          </motion.h2>
-          <motion.h1
-            variants={fadeIn(0.2)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="text-4xl font-extrabold mb-10 dark:text-white"
-          >
-            Why Aetheria?
-          </motion.h1>
+            <h2 className="text-sm uppercase text-blue-300 font-bold tracking-widest mb-2">
+              The Challenge
+            </h2>
+            <h1 className="text-4xl font-bold text-white">Why Aetheria?</h1>
+          </motion.div>
+
           <div className="grid md:grid-cols-3 gap-8 w-full">
             <Card
               title="Manual & Error-Prone"
@@ -153,53 +147,67 @@ const Main = () => {
       </section>
 
       {/* Solution Section */}
-      <section className="py-20 px-8 w-full text-center">
-        <motion.h5
-          variants={fadeIn(0.1)}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="text-sm uppercase text-gray-500 font-bold tracking-widest mb-2 dark:text-gray-400"
-        >
-          Our Solution
-        </motion.h5>
-        <motion.p
-          variants={fadeIn(0.2)}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          className="text-4xl font-extrabold mb-8 text-blue-600 dark:text-blue-400"
-        >
-          Aetheria: The All-in-One Solution
-        </motion.p>
-        <motion.img
-          variants={fadeIn(0.3)}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true }}
-          src={frontendImage}
-          alt="Aetheria UI"
-          className="mx-auto rounded-2xl shadow-lg mb-8 w-full max-w-4xl"
-        />
-        <div className="flex flex-col md:flex-row justify-center items-start md:space-x-12 w-full">
-          <ul className="text-left space-y-4 mb-6 md:mb-0 max-w-lg">
-            <li>
-              <p className="dark:text-gray-400">
-                <b>Cloud-Based & Accessible:</b> Manage your society anytime,
-                anywhere via an intuitive web application.
+      <section className="py-20 px-8 w-full text-center relative z-10">
+        <div className="max-w-7xl mx-auto bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] p-8 md:p-16">
+          <motion.h5
+            variants={fadeIn(0.1)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="text-sm uppercase text-blue-300 font-bold tracking-widest mb-2"
+          >
+            Our Solution
+          </motion.h5>
+          <motion.p
+            variants={fadeIn(0.2)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="text-4xl md:text-5xl font-extrabold mb-12 text-white"
+          >
+            Aetheria: The All-in-One Solution
+          </motion.p>
+
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <motion.div
+              variants={fadeIn(0.3)}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              className="w-full lg:w-1/2"
+            >
+              <img
+                src={frontendImage}
+                alt="Aetheria UI"
+                className="rounded-2xl shadow-2xl border border-white/20"
+              />
+            </motion.div>
+
+            <div className="w-full lg:w-1/2 text-left space-y-8">
+              <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Cloud-Based & Accessible
+                </h3>
+                <p className="text-gray-300">
+                  Manage your society anytime, anywhere via an intuitive web
+                  application designed for every device.
+                </p>
+              </div>
+              <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
+                <h3 className="text-xl font-bold text-white mb-2">
+                  Real-Time Synchronization
+                </h3>
+                <p className="text-gray-300">
+                  Instant updates ensure seamless interaction between admin and
+                  residents without the lag.
+                </p>
+              </div>
+              <p className="text-blue-200 text-lg italic">
+                "Aetheria is designed to bring efficiency and harmony to your
+                community."
               </p>
-            </li>
-            <li>
-              <p className="dark:text-gray-400">
-                <b>Real-Time Synchronization:</b> Instant updates and seamless
-                interaction between admin and residents.
-              </p>
-            </li>
-          </ul>
-          <p className="text-gray-600 text-lg max-w-lg text-left dark:text-gray-400">
-            Aetheria is designed to bring efficiency and harmony to your
-            community.
-          </p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
@@ -208,7 +216,7 @@ const Main = () => {
 
 // --- Footer ---
 const Footer = () => (
-  <footer className="bg-gray-200 py-6 px-8 text-center dark:bg-gray-800 dark:text-gray-400">
+  <footer className="bg-black/30 backdrop-blur-md border-t border-white/10 py-8 px-8 text-center text-gray-400">
     <p>© {new Date().getFullYear()} Aetheria. All rights reserved.</p>
   </footer>
 );
@@ -232,7 +240,7 @@ const LandingPage = () => {
   const toggleTheme = () => setIsDarkMode((prev) => !prev);
 
   return (
-    <div className="font-sans text-gray-800 bg-gray-50 min-h-screen w-full dark:bg-gray-900 dark:text-gray-300">
+    <div className="font-sans text-gray-100 min-h-screen w-full transition-colors duration-300">
       <Header isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       <Main />
       <Footer />

@@ -1,125 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bell } from 'lucide-react';
-import api from '../../utils/api';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Bell, Send } from "lucide-react";
+import api from "../../utils/api";
+import NoticeBoard from "../../Components/NoticeBoard"; // Assuming you moved the component above to its own file, or define locally if preferred.
 
-// --- (CreateNoticeForm component is unchanged) ---
+// --- Create Notice Form Component ---
 const CreateNoticeForm = ({ onNoticePosted }) => {
-  const [title, setTitle] = useState('');
-  const [body, setBody] = useState('');
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage({ type: '', text: '' });
+    setMessage({ type: "", text: "" });
 
     try {
-      const res = await api.post('/api/notices', { title, body });
-      setMessage({ type: 'success', text: 'Notice posted successfully!' });
-      setTitle('');
-      setBody('');
-      onNoticePosted(res.data); // Pass the new notice up to the parent list
+      const res = await api.post("/api/notices", { title, body });
+      setMessage({ type: "success", text: "Notice posted successfully!" });
+      setTitle("");
+      setBody("");
+      onNoticePosted(res.data);
     } catch (err) {
       console.error("Error posting notice:", err);
-      setMessage({ type: 'error', text: err.response?.data?.msg || 'Failed to post notice.' });
+      setMessage({
+        type: "error",
+        text: err.response?.data?.msg || "Failed to post notice.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg mb-6">
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Post a New Notice</h2>
+    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-xl p-6 mb-6">
+      <div className="flex items-center gap-2 mb-6 border-b border-white/10 pb-4">
+        <Send size={20} className="text-blue-400" />
+        <h2 className="text-xl font-bold text-white">Post New Notice</h2>
+      </div>
+
       {message.text && (
-        <div className={`mb-4 p-3 rounded-md text-sm ${
-          message.type === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
-          'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-        }`}>
+        <div
+          className={`mb-6 p-4 rounded-xl text-sm border ${
+            message.type === "error"
+              ? "bg-red-500/10 border-red-500/20 text-red-300"
+              : "bg-green-500/10 border-green-500/20 text-green-300"
+          }`}
+        >
           {message.text}
         </div>
       )}
-      <form onSubmit={handleSubmit} className="space-y-4">
+
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title *</label>
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-300 mb-1"
+          >
+            Title *
+          </label>
           <input
             type="text"
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
-            className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             placeholder="e.g., Annual General Meeting"
           />
         </div>
         <div>
-          <label htmlFor="body" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Body *</label>
+          <label
+            htmlFor="body"
+            className="block text-sm font-medium text-gray-300 mb-1"
+          >
+            Body *
+          </label>
           <textarea
             id="body"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             required
             rows="4"
-            className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
             placeholder="Enter the full notice details here..."
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white 
-            ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} 
-            focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-800 focus:ring-blue-500`}
+          className={`w-full py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white tracking-wide transition-all duration-300 transform hover:-translate-y-0.5
+            ${loading ? "bg-gray-600 cursor-not-allowed opacity-50" : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 border border-transparent hover:border-blue-400/30"} 
+            `}
         >
-          {loading ? 'Posting...' : 'Post Notice'}
+          {loading ? "Posting..." : "Post Notice"}
         </button>
       </form>
     </div>
   );
 };
 
-// --- (NoticeBoard component is unchanged) ---
-const NoticeBoard = ({ notices }) => (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg">
-      <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Posted Notices</h3>
-      {notices.length === 0 && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">No notices have been posted yet.</p>
-      )}
-      <ul className="space-y-4">
-        {notices.map((notice) => (
-          <li key={notice._id} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-md shadow-sm">
-            <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">{notice.title}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                Posted on: {new Date(notice.createdAt).toLocaleDateString()}
-            </p>
-            <p className="text-sm text-gray-700 dark:text-gray-300">{notice.body}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
-);
-
-// --- Main Notices Page Component ---
+// --- Main Page Component ---
 function Notices() {
   const navigate = useNavigate();
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  // Fetch all notices on component load
   useEffect(() => {
     const fetchNotices = async () => {
       setLoading(true);
-      setError('');
+      setError("");
       try {
-        // --- THIS IS THE FIX ---
-        // Changed route to the new admin-specific one
-        const res = await api.get('/api/notices/admin');
-        setNotices(res.data);
+        const res = await api.get("/api/notices/admin");
+        // Transform date format if needed to match NoticeBoard expectation
+        const formattedData = res.data.map((n) => ({
+          ...n,
+          date: new Date(n.createdAt).toLocaleDateString(),
+        }));
+        setNotices(formattedData);
       } catch (err) {
         console.error("Failed to fetch notices:", err);
-        setError(err.response?.data?.msg || 'Could not load notices.');
+        setError(err.response?.data?.msg || "Could not load notices.");
       } finally {
         setLoading(false);
       }
@@ -127,33 +130,53 @@ function Notices() {
     fetchNotices();
   }, []);
 
-  // Callback function to add the new notice to the top of the list
   const handleNoticePosted = (newNotice) => {
-    setNotices([newNotice, ...notices]);
+    const formattedNotice = {
+      ...newNotice,
+      date: new Date(newNotice.createdAt).toLocaleDateString(),
+    };
+    setNotices([formattedNotice, ...notices]);
   };
 
   return (
-    <div className="max-w-4xl mx-auto grid grid-cols-1 gap-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-            <Bell size={32} className="text-blue-600 dark:text-blue-400" />
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white ml-3">Manage Notices</h1>
-        </div>
-        <button 
-            onClick={() => navigate('/admin')} 
-            className="flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline">
+    <div className="max-w-7xl mx-auto animate-fade-in-up">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
+        <div>
+          <button
+            onClick={() => navigate("/admin")}
+            className="flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-2"
+          >
             <ArrowLeft size={16} className="mr-1" />
             Back to Dashboard
-        </button>
+          </button>
+          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+            <Bell className="text-blue-400" size={32} />
+            Manage Notices
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Broadcast announcements to all residents.
+          </p>
+        </div>
       </div>
-      
-      {/* 1. The Form */}
-      <CreateNoticeForm onNoticePosted={handleNoticePosted} />
 
-      {/* 2. The List */}
-      {loading && <p className="text-center text-gray-500 dark:text-gray-400">Loading notices...</p>}
-      {error && <p className="text-center text-red-500 dark:text-red-400">{error}</p>}
-      {!loading && !error && <NoticeBoard notices={notices} />}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Left: Form */}
+        <div>
+          <CreateNoticeForm onNoticePosted={handleNoticePosted} />
+        </div>
+
+        {/* Right: List */}
+        <div>
+          {loading && (
+            <p className="text-center text-gray-400 animate-pulse">
+              Loading notices...
+            </p>
+          )}
+          {error && <p className="text-center text-red-400">{error}</p>}
+          {!loading && !error && <NoticeBoard notices={notices} />}
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,10 +1,25 @@
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 0;
+  /* CHANGED: Default to left alignment for a dashboard */
+  text-align: left;
 }
 
+/* Glass Card Utility Class (Vanilla CSS version) */
+/* You can use this OR the Tailwind .glass class we made in index.css */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border-radius: 1rem; /* Added rounded corners for consistency */
+}
+
+/* React Logo Animations (Kept as is) */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -31,12 +46,4 @@
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
 }

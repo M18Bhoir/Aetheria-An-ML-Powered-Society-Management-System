@@ -1,1 +1,68 @@
 @import "tailwindcss";
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  /* Deep gradient background for Glassmorphism */
+  background: radial-gradient(circle at top left, #1e293b, #0f172a, #020617);
+  background-attachment: fixed;
+  color: white;
+}
+
+/* --- ADD THIS SECTION FOR EASIER STYLING --- */
+@layer components {
+  /* Standard Glass Card */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/10 shadow-lg rounded-2xl;
+  }
+
+  /* Darker Glass (for sidebars/modals) */
+  .glass-dark {
+    @apply bg-black/40 backdrop-blur-xl border border-white/5 shadow-2xl rounded-2xl;
+  }
+
+  /* Interactive Glass (hover effects) */
+  .glass-hover {
+    @apply hover:bg-white/20 transition-all duration-300 cursor-pointer;
+  }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/10 shadow-lg rounded-2xl;
+    /* Hardware acceleration hint */
+    will-change: transform, opacity;
+  }
+}

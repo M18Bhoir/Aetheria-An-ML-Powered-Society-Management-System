@@ -199,32 +199,24 @@ router.patch("/dues/:id/status", adminAuth, async (req, res) => {
    ========================================================= */
 router.get("/dashboard-stats", adminAuth, async (req, res) => {
   try {
-    const residentCount = await User.countDocuments();
-    const noticeCount = 0; // 🔁 Replace when Notice model exists
-    const visitorCount = 0; // 🔁 Replace when Visitor model exists
-
-    const dues = await Dues.find();
-
-    const collected = dues
-      .filter((d) => d.status === "Paid")
-      .reduce((sum, d) => sum + (d.amount || 0), 0);
-
-    const pending = dues
-      .filter((d) => d.status !== "Paid")
-      .reduce((sum, d) => sum + (d.amount || 0), 0);
+    const [totalResidents, totalTickets, pendingTickets, totalRevenue] =
+      await Promise.all([
+        User.countDocuments({ role: "resident" }),
+        Ticket.countDocuments(),
+        Ticket.countDocuments({ status: "Open" }),
+        Billing.aggregate([
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]),
+      ]);
 
     res.json({
-      residentCount,
-      visitorCount,
-      noticeCount,
-      duesSummary: {
-        collected,
-        pending,
-      },
+      totalResidents,
+      totalTickets,
+      pendingTickets,
+      totalRevenue: totalRevenue[0]?.total || 0,
     });
   } catch (err) {
-    console.error("DASHBOARD STATS ERROR:", err);
-    res.status(500).json({ msg: "Failed to fetch dashboard stats" });
+    res.status(500).json({ error: err.message });
   }
 });
 

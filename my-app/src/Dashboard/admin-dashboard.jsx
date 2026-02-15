@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   Bell,
   Users,
   Wrench,
-  Menu,
-  X,
   Home,
   DollarSign,
   LogOut,
@@ -15,15 +13,32 @@ import {
   Vote,
   FileText,
   Briefcase,
-  BarChart3, // Import the Analytics icon
+  BarChart3,
   Ticket,
-  UserCheck,
   ClockAlert,
 } from "lucide-react";
 
-/* ================= Sidebar ================= */
+/* ================= Nav Item Component ================= */
+const NavItem = ({ item }) => (
+  <NavLink
+    to={item.path}
+    end={item.path === "/admin"}
+    className={({ isActive }) =>
+      `flex items-center space-x-3 w-full p-3 rounded-xl transition-all duration-300 mb-1 px-4
+      ${
+        isActive
+          ? "bg-blue-600/80 shadow-[0_0_15px_rgba(37,99,235,0.5)] text-white border border-blue-400/30"
+          : "text-gray-400 hover:bg-white/10 hover:text-white hover:scale-105"
+      }`
+    }
+  >
+    {item.icon}
+    <span className="font-medium tracking-wide">{item.name}</span>
+  </NavLink>
+);
+
+/* ================= Sidebar Component ================= */
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -33,7 +48,6 @@ const Sidebar = () => {
     navigate("/login");
   };
 
-  /* ================= MENU ================= */
   const menu = [
     { name: "Dashboard", icon: <Home size={20} />, path: "/admin" },
     { name: "Residents", icon: <Users size={20} />, path: "/admin/residents" },
@@ -48,7 +62,7 @@ const Sidebar = () => {
       path: "/admin/manage-dues",
     },
     {
-      name: "Manage Bookings",
+      name: "Bookings",
       icon: <CalendarCheck size={20} />,
       path: "/admin/manage-bookings",
     },
@@ -69,24 +83,22 @@ const Sidebar = () => {
     },
     { name: "Notices", icon: <Bell size={20} />, path: "/admin/notices" },
     {
-      name: "Expense Logger",
+      name: "Expense Log",
       icon: <FileText size={20} />,
       path: "/admin/expense-logger",
     },
     {
-      name: "Rental Applications",
+      name: "Rentals",
       icon: <Briefcase size={20} />,
       path: "/admin/manage-rentals",
     },
-    /* 📊 ADDED ANALYTICS */
     {
       name: "Analytics",
       icon: <BarChart3 size={20} />,
       path: "/admin/analytics",
     },
-    /* ================= 🎫 TICKET SYSTEM ================= */
     {
-      name: "Ticket Overview",
+      name: "Tickets",
       icon: <Ticket size={20} />,
       path: "/admin/tickets/overview",
     },
@@ -96,75 +108,56 @@ const Sidebar = () => {
       path: "/admin/tickets/sla-alerts",
     },
     {
-      name: "Ticket Reports",
+      name: "Reports",
       icon: <BarChart3 size={20} />,
       path: "/admin/tickets/reports",
     },
   ];
 
-  /* ================= Nav Item ================= */
-  const NavItem = ({ item }) => (
-    <NavLink
-      to={item.path}
-      end={item.path === "/admin"}
-      className={({ isActive }) =>
-        `flex items-center space-x-3 w-full p-3 rounded-lg transition-colors duration-200
-        ${isOpen ? "px-4" : "justify-center"}
-        ${
-          isActive
-            ? "bg-blue-600 text-white shadow-md"
-            : "text-gray-300 hover:bg-gray-700 hover:text-white"
-        }`
-      }
-    >
-      {item.icon}
-      {isOpen && <span className="font-medium">{item.name}</span>}
-    </NavLink>
-  );
-
   return (
-    <aside
-      className={`${isOpen ? "w-64" : "w-20"}
-        bg-gray-900 text-gray-200 shadow-lg
-        transition-all duration-300 h-screen flex flex-col`}
-    >
-      <div className="flex items-center justify-between p-4 h-16 border-b border-gray-700">
-        {isOpen && <div className="text-xl font-bold text-white">🏢 Admin</div>}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg text-gray-400 hover:bg-gray-700 hover:text-white"
-        >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+    <aside className="w-72 bg-black/20 backdrop-blur-xl border-r border-white/10 shadow-2xl h-screen flex flex-col z-50">
+      {/* Header */}
+      <div className="flex items-center justify-center p-6 h-20 border-b border-white/10">
+        <h1 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+          Admin
+        </h1>
       </div>
 
-      <nav className="flex-1 space-y-2 p-3 overflow-y-auto">
+      {/* Navigation */}
+      <nav className="flex-1 space-y-2 p-4 overflow-y-auto custom-scrollbar">
         {menu.map((item) => (
           <NavItem key={item.name} item={item} />
         ))}
       </nav>
 
-      <div className="p-3 border-t border-gray-700">
+      {/* Footer / Logout */}
+      <div className="p-4 border-t border-white/10">
         <button
           onClick={handleLogout}
-          className={`flex items-center space-x-3 w-full p-3 rounded-lg
-            transition-colors duration-200 text-red-400
-            hover:bg-red-900 hover:text-red-300
-            ${isOpen ? "px-4" : "justify-center"}`}
+          className="flex items-center space-x-3 w-full p-3 rounded-xl px-4
+            transition-all duration-300 text-red-400 border border-transparent
+            hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/20"
         >
           <LogOut size={20} />
-          {isOpen && <span className="font-medium">Logout</span>}
+          <span className="font-medium">Logout</span>
         </button>
       </div>
     </aside>
   );
 };
 
+/* ================= Main Layout ================= */
 function AdminDashboard() {
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen w-full overflow-hidden text-gray-100">
       <Sidebar />
-      <main className="flex-1 p-6 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto relative">
+        {/* Background Glow Effect */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+          <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-600/20 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[100px]"></div>
+        </div>
+
         <Outlet />
       </main>
     </div>

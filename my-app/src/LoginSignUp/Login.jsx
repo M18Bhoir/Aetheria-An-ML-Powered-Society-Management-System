@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../utils/api.jsx";
-import user_icon from "../Assets/person.png";
-import password_icon from "../Assets/password.png";
+import {
+  User,
+  Lock,
+  Shield,
+  ShieldCheck,
+  ArrowRight,
+  AlertCircle,
+} from "lucide-react";
+import api from "../utils/api";
 
 const Login = () => {
   const [userId, setUserId] = useState("");
@@ -34,18 +40,15 @@ const Login = () => {
       const res = await api.post("/api/auth/login", payload);
 
       if (res.status === 200 && res.data.token) {
-        // 1. Set all localStorage items immediately
         localStorage.setItem("token", res.data.token);
 
         if (res.data.role === "admin") {
           localStorage.setItem("admin", JSON.stringify(res.data.user));
           localStorage.removeItem("user");
-          // 2. Use replace: true to prevent back-button loops
           navigate("/admin", { replace: true });
         } else {
           localStorage.setItem("user", JSON.stringify(res.data.user));
           localStorage.removeItem("admin");
-          // 2. Use replace: true to prevent back-button loops
           navigate("/dashboard", { replace: true });
         }
       }
@@ -61,76 +64,137 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f1e] p-4">
-      <div className="w-full max-w-sm bg-[#1a1a2e] rounded-xl p-6 shadow-lg">
-        <h2 className="text-center text-3xl text-[#ff6347] font-bold mb-4">
-          Login
-        </h2>
+    // Background handled by index.css body gradient, just center content here
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in-up">
+      {/* Glass Card Container */}
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+        {/* Background Glow Effect */}
+        <div className="absolute top-[-50%] left-[-50%] w-full h-full bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute bottom-[-50%] right-[-50%] w-full h-full bg-purple-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
+        <div className="text-center mb-8 relative z-10">
+          <h2 className="text-4xl font-extrabold text-white mb-2 tracking-tight">
+            Welcome Back
+          </h2>
+          <p className="text-gray-400 text-sm">
+            Sign in to access your{" "}
+            {loginType === "admin" ? "admin portal" : "resident dashboard"}.
+          </p>
+        </div>
+
+        {/* Error/Success Message */}
         {message && (
           <div
-            className={`p-3 rounded mb-4 ${
+            className={`flex items-center p-3 rounded-xl mb-6 text-sm font-medium border ${
               message.type === "error"
-                ? "bg-red-900 text-red-300"
-                : "bg-green-900 text-green-300"
+                ? "bg-red-500/10 border-red-500/20 text-red-300"
+                : "bg-green-500/10 border-green-500/20 text-green-300"
             }`}
           >
+            <AlertCircle size={16} className="mr-2 shrink-0" />
             {message.text}
           </div>
         )}
 
-        <div className="flex gap-2 mb-4">
-          {["user", "admin"].map((role) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => setLoginType(role)}
-              className={`w-full py-2 rounded transition-colors ${
-                loginType === role
-                  ? "bg-[#ff6347] text-white"
-                  : "bg-[#2e2e42] text-gray-400 hover:bg-[#3a3a54]"
-              }`}
-            >
-              {role.charAt(0).toUpperCase() + role.slice(1)}
-            </button>
-          ))}
+        {/* Role Toggle Switch */}
+        <div className="flex bg-black/20 p-1 rounded-xl mb-8 relative z-10">
+          <button
+            type="button"
+            onClick={() => setLoginType("user")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+              loginType === "user"
+                ? "bg-white/10 text-white shadow-lg border border-white/10"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <User size={16} /> Resident
+          </button>
+          <button
+            type="button"
+            onClick={() => setLoginType("admin")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
+              loginType === "admin"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/30"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            {loginType === "admin" ? (
+              <ShieldCheck size={16} />
+            ) : (
+              <Shield size={16} />
+            )}
+            Admin
+          </button>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="flex items-center bg-[#2e2e42] rounded px-3 border border-transparent focus-within:border-[#ff6347]">
-            <img src={user_icon} alt="" className="w-5 h-5 mr-2 invert" />
-            <input
-              type="text"
-              placeholder={loginType === "admin" ? "Admin ID" : "User ID"}
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className="bg-transparent w-full h-12 text-white outline-none"
-              required
-            />
+        <form onSubmit={handleLogin} className="space-y-5 relative z-10">
+          {/* User ID Input */}
+          <div className="group">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+                <User size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder={loginType === "admin" ? "Admin ID" : "User ID"}
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                required
+              />
+            </div>
           </div>
 
-          <div className="flex items-center bg-[#2e2e42] rounded px-3 border border-transparent focus-within:border-[#ff6347]">
-            <img src={password_icon} alt="" className="w-5 h-5 mr-2 invert" />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-transparent w-full h-12 text-white outline-none"
-              required
-            />
+          {/* Password Input */}
+          <div className="group">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+                <Lock size={18} />
+              </div>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+                required
+              />
+            </div>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full h-12 bg-[#ff6347] text-white font-bold rounded ${
-              loading ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
-            }`}
+            className={`w-full py-3.5 px-4 rounded-xl shadow-lg text-sm font-bold text-white tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2
+              ${
+                loading
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 border border-transparent hover:border-blue-400/30"
+              }`}
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? (
+              "Verifying..."
+            ) : (
+              <>
+                Login <ArrowRight size={16} />
+              </>
+            )}
           </button>
         </form>
+      </div>
+
+      {/* Footer Links */}
+      <div className="mt-8 text-center text-sm text-gray-400">
+        <p>
+          Don't have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-blue-400 hover:text-blue-300 cursor-pointer font-semibold transition-colors"
+          >
+            Sign up here
+          </span>
+        </p>
       </div>
     </div>
   );

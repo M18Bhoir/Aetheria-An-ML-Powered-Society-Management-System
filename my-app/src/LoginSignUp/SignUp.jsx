@@ -1,39 +1,38 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Corrected import path for the API instance
+import {
+  User,
+  Mail,
+  Lock,
+  ArrowRight,
+  AlertCircle,
+  Shield,
+} from "lucide-react";
 import api from "../utils/api";
-
-import user_icon from "../Assets/person.png";
-import password_icon from "../Assets/password.png";
-// --- UPDATED: Import the email icon ---
-import email_icon from "../Assets/email.png";
 
 const Signup = () => {
   const [name, setName] = useState("");
-  // --- UPDATED: Add email state ---
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState(null); // Added for feedback
-  const [loading, setLoading] = useState(false); // Added for loading state
-
+  const [message, setMessage] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    setMessage(null); // Clear previous messages
+    setMessage(null);
 
     if (password !== confirmPassword) {
-      setMessage({ type: 'error', text: 'Passwords do not match!' });
+      setMessage({ type: "error", text: "Passwords do not match!" });
       return;
     }
 
-    setLoading(true); // Set loading state
+    setLoading(true);
 
     try {
-      // --- UPDATED: Send 'email' in the request body ---
       const res = await api.post("/api/auth/signup", {
         name,
         email,
@@ -41,151 +40,178 @@ const Signup = () => {
         password,
       });
 
-      // Assuming backend sends a success flag or similar
-      // Adjust based on your actual backend response structure
-      if (res.status === 201 || res.status === 200) { // Check for successful status codes
-         setMessage({ type: 'success', text: 'Signup successful! Redirecting to login...' });
-         setTimeout(() => navigate("/login"), 1500); // Redirect after delay
+      if (res.status === 201 || res.status === 200) {
+        setMessage({
+          type: "success",
+          text: "Signup successful! Redirecting to login...",
+        });
+        setTimeout(() => navigate("/login"), 1500);
       } else {
-         // This might not be hit if backend throws errors handled by catch
-         setMessage({ type: 'error', text: res.data.message || res.data.msg || "Signup failed. Try again." });
+        setMessage({
+          type: "error",
+          text: res.data.message || res.data.msg || "Signup failed. Try again.",
+        });
       }
     } catch (err) {
       console.error("Signup error:", err);
-       let errorMessage = "Error during sign up. Please try again.";
-       if (err.response) {
-            errorMessage = err.response.data.message || err.response.data.msg || "Server error during signup.";
-       } else if (err.request) {
-           errorMessage = "Network error. Could not connect to the server.";
-       }
-       setMessage({ type: 'error', text: errorMessage });
+      let errorMessage = "Error during sign up. Please try again.";
+      if (err.response) {
+        errorMessage =
+          err.response.data.message ||
+          err.response.data.msg ||
+          "Server error during signup.";
+      } else if (err.request) {
+        errorMessage = "Network error. Could not connect to the server.";
+      }
+      setMessage({ type: "error", text: errorMessage });
     } finally {
-        setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f1e] w-full p-4"> {/* Added padding */}
-      <h2 className="text-white mb-6 text-2xl font-bold">Create Account</h2>
+    // Background handled by index.css body gradient
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in-up">
+      {/* Glass Card Container */}
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+        {/* Background Glow Effect */}
+        <div className="absolute top-[-50%] left-[-50%] w-full h-full bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <div className="absolute bottom-[-50%] right-[-50%] w-full h-full bg-purple-500/10 blur-[100px] rounded-full pointer-events-none"></div>
 
-      <div className="flex flex-col w-full max-w-sm pb-[30px] bg-[#1a1a2e] rounded-[15px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] border border-[#2e2e42]">
-        <div className="flex flex-col items-center gap-2.5 w-full mt-7">
-          <div className="text-[#ff6347] text-4xl font-bold">Sign Up</div>
-          <div className="w-[61px] h-1.5 bg-gradient-to-r from-[#ff6347] to-[#ff9478] rounded-[9px]" />
+        <div className="text-center mb-8 relative z-10">
+          <h2 className="text-3xl font-extrabold text-white mb-2 tracking-tight">
+            Create Account
+          </h2>
+          <p className="text-gray-400 text-sm">
+            Join the community and manage your society seamlessly.
+          </p>
         </div>
 
-        <form
-          onSubmit={handleSignUp}
-          className="mt-[30px] flex flex-col gap-6 px-7" // Reduced top margin
-        >
-         {/* Message Display Area */}
-          {message && (
-            <div
-              className={`p-3 rounded-md text-sm font-medium ${
-                message.type === "error"
-                  ? "bg-red-900 text-red-300 border border-red-700"
-                  : "bg-green-900 text-green-300 border border-green-700"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
+        {/* Message Display Area */}
+        {message && (
+          <div
+            className={`flex items-center p-3 rounded-xl mb-6 text-sm font-medium border relative z-10 ${
+              message.type === "error"
+                ? "bg-red-500/10 border-red-500/20 text-red-300"
+                : "bg-green-500/10 border-green-500/20 text-green-300"
+            }`}
+          >
+            <AlertCircle size={16} className="mr-2 shrink-0" />
+            {message.text}
+          </div>
+        )}
 
-          {/* Name */}
-          <div className="flex items-center mx-auto w-full h-[60px] bg-[#2e2e42] rounded-lg border border-[#444466] focus-within:border-[#ff6347] focus-within:shadow-[0_0_10px_rgba(255,99,71,0.4)] transition-colors duration-200">
-            <img src={user_icon} alt="User icon" className="mx-4 h-5 w-5 invert" />
+        <form onSubmit={handleSignUp} className="space-y-4 relative z-10">
+          {/* Name Input */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+              <User size={18} />
+            </div>
             <input
               type="text"
-              placeholder="Name"
+              placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="h-[50px] w-full bg-transparent text-white text-lg placeholder:text-gray-400 outline-none"
-            />
-          </div>
-          
-          {/* --- UPDATED: Add Email Input Field --- */}
-          <div className="flex items-center mx-auto w-full h-[60px] bg-[#2e2e42] rounded-lg border border-[#444466] focus-within:border-[#ff6347] focus-within:shadow-[0_0_10px_rgba(255,99,71,0.4)] transition-colors duration-200">
-            <img src={email_icon} alt="Email icon" className="mx-4 h-5 w-5 invert" />
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="h-[50px] w-full bg-transparent text-white text-lg placeholder:text-gray-400 outline-none"
+              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             />
           </div>
 
-          {/* User ID */}
-          <div className="flex items-center mx-auto w-full h-[60px] bg-[#2e2e42] rounded-lg border border-[#444466] focus-within:border-[#ff6347] focus-within:shadow-[0_0_10px_rgba(255,99,71,0.4)] transition-colors duration-200">
-            <img src={user_icon} alt="ID icon" className="mx-4 h-5 w-5 invert" />
+          {/* Email Input */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+              <Mail size={18} />
+            </div>
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+            />
+          </div>
+
+          {/* User ID Input */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+              <Shield size={18} />
+            </div>
             <input
               type="text"
               placeholder="User ID (e.g., A-101)"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               required
-              className="h-[50px] w-full bg-transparent text-white text-lg placeholder:text-gray-400 outline-none"
+              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             />
           </div>
 
-          {/* Password */}
-          <div className="flex items-center mx-auto w-full h-[60px] bg-[#2e2e42] rounded-lg border border-[#444466] focus-within:border-[#ff6347] focus-within:shadow-[0_0_10px_rgba(255,99,71,0.4)] transition-colors duration-200">
-            <img src={password_icon} alt="Password icon" className="mx-4 h-5 w-5 invert" />
+          {/* Password Input */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+              <Lock size={18} />
+            </div>
             <input
               type="password"
-              placeholder="Password (min 6 characters)"
+              placeholder="Password (min 6 chars)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength="6" // Example: Add min length validation
-              className="h-[50px] w-full bg-transparent text-white text-lg placeholder:text-gray-400 outline-none"
+              minLength="6"
+              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             />
           </div>
 
-          {/* Confirm Password */}
-          <div className="flex items-center mx-auto w-full h-[60px] bg-[#2e2e42] rounded-lg border border-[#444466] focus-within:border-[#ff6347] focus-within:shadow-[0_0_10px_rgba(255,99,71,0.4)] transition-colors duration-200">
-            <img src={password_icon} alt="Password icon" className="mx-4 h-5 w-5 invert" />
+          {/* Confirm Password Input */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+              <Lock size={18} />
+            </div>
             <input
               type="password"
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              minLength="6" // Match password min length
-              className="h-[50px] w-full bg-transparent text-white text-lg placeholder:text-gray-400 outline-none"
+              minLength="6"
+              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             />
           </div>
 
-          {/* Submit */}
-          <div className="flex justify-center mt-[30px]"> {/* Removed container div */}
-            <button
-              type="submit"
-              disabled={loading} // Disable button when loading
-              className={`flex justify-center items-center w-full h-[60px] text-white bg-gradient-to-r from-[#ff6347] to-[#ff9478] rounded-lg text-lg font-bold transition-all duration-300 ${
-                loading ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-[0_0_15px_rgba(255,99,71,0.6)] hover:-translate-y-0.5'
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3.5 px-4 rounded-xl shadow-lg text-sm font-bold text-white tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 mt-6
+              ${
+                loading
+                  ? "bg-gray-600 cursor-not-allowed opacity-50"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 border border-transparent hover:border-blue-400/30"
               }`}
-            >
-             {loading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-              ) : (
-                'Sign Up'
-              )}
-            </button>
-          </div>
+          >
+            {loading ? (
+              "Creating Account..."
+            ) : (
+              <>
+                Sign Up <ArrowRight size={16} />
+              </>
+            )}
+          </button>
         </form>
 
-        {/* Already have an account? */}
-        <p className="text-gray-400 text-center mt-4 text-sm">
-          Already have an account?{" "}
-          <span
-            className="text-[#ff6347] cursor-pointer hover:underline"
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </span>
-        </p>
+        {/* Footer Link */}
+        <div className="mt-8 text-center text-sm text-gray-400 relative z-10">
+          <p>
+            Already have an account?{" "}
+            <span
+              onClick={() => navigate("/login")}
+              className="text-blue-400 hover:text-blue-300 cursor-pointer font-semibold transition-colors"
+            >
+              Login here
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );

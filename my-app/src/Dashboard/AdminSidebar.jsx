@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   Ticket,
-  UserCheck,
   ClockAlert,
   BarChart3,
 } from "lucide-react";
@@ -23,17 +22,23 @@ const NavItem = ({ item, isOpen }) => (
       to={item.path}
       end={item.path === "/admin"}
       className={({ isActive }) =>
-        `flex items-center space-x-3 w-full p-3 rounded-lg transition-colors duration-200
+        `flex items-center space-x-3 w-full p-3 rounded-xl transition-all duration-300 mb-1
         ${isOpen ? "px-4" : "justify-center"}
         ${
           isActive
-            ? "bg-blue-600 text-white shadow-md"
-            : "text-white hover:bg-gray-700"
+            ? "bg-blue-600/80 shadow-[0_0_15px_rgba(37,99,235,0.5)] text-white border border-blue-400/30"
+            : "text-gray-400 hover:bg-white/10 hover:text-white hover:scale-105"
         }`
       }
     >
-      {item.icon}
-      {isOpen && <span className="font-medium">{item.name}</span>}
+      {/* Icon Wrapper for better centering when collapsed */}
+      <div className={`${!isOpen && "mx-auto"}`}>{item.icon}</div>
+
+      {isOpen && (
+        <span className="font-medium tracking-wide animate-fade-in">
+          {item.name}
+        </span>
+      )}
     </NavLink>
   </li>
 );
@@ -89,22 +94,28 @@ function AdminSidebar({ isOpen, setIsOpen }) {
 
   return (
     <nav
-      className={`h-screen bg-gray-900 text-white shadow-lg
-        flex flex-col
-        ${isOpen ? "w-64" : "w-20"}
-        transition-all duration-300`}
+      className={`h-screen bg-black/20 backdrop-blur-xl border-r border-white/10 shadow-2xl
+        flex flex-col z-50
+        ${isOpen ? "w-72" : "w-24"}
+        transition-all duration-300 ease-in-out`}
     >
-      <div className="flex items-center justify-between p-4 h-16 border-b border-gray-700">
-        {isOpen && <div className="text-xl font-bold">Aetheria Admin</div>}
+      {/* Header / Toggle */}
+      <div className="flex items-center justify-between p-6 h-20 border-b border-white/10">
+        {isOpen && (
+          <h1 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 whitespace-nowrap overflow-hidden">
+            Aetheria Admin
+          </h1>
+        )}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-lg hover:bg-gray-700"
+          className={`p-2 rounded-lg text-gray-400 hover:bg-white/10 hover:text-white transition-colors ${!isOpen && "mx-auto"}`}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      <ul className="flex-1 space-y-2 p-3 overflow-y-auto">
+      {/* Nav List */}
+      <ul className="flex-1 space-y-2 p-4 overflow-y-auto custom-scrollbar">
         {menu.map((item) => (
           <NavItem key={item.name} item={item} isOpen={isOpen} />
         ))}

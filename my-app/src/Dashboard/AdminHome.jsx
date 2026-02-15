@@ -7,238 +7,266 @@ import {
   UserPlus,
   DollarSign,
   Brain,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
 import api from "../utils/api";
 import MaintenanceSchedule from "./AdminViews/MaintenanceSchedule";
 import NoticeBoard from "./AdminViews/NoticeBoard";
-import Chart from "../Components/Charts"; // Importing the specialized ML chart component
+import Chart from "../Components/Charts";
 
-/* -------------------- Sub Components -------------------- */
+/* -------------------- Glass Card Components -------------------- */
 
-const StatsCards = ({ stats }) => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-    {stats.map((stat) => (
+const StatCard = ({ title, value, icon: Icon, color, subColor }) => (
+  <div className="relative group overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg hover:shadow-2xl hover:bg-white/10 transition-all duration-300">
+    <div
+      className={`absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity ${color}`}
+    >
+      <Icon size={64} />
+    </div>
+    <div className="flex flex-col justify-between h-full relative z-10">
       <div
-        key={stat.title}
-        className="flex items-center p-6 bg-white dark:bg-slate-800 rounded-lg shadow-lg"
+        className={`p-3 w-fit rounded-2xl mb-4 ${subColor} text-white shadow-inner`}
       >
-        <div
-          className={`p-4 rounded-full ${stat.iconBg} ${stat.iconColor} mr-4`}
-        >
-          {stat.icon}
-        </div>
-        <div>
-          <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">
-            {stat.title}
-          </h3>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
-            {stat.value}
-          </p>
-        </div>
+        <Icon size={24} />
       </div>
-    ))}
-  </div>
-);
-
-const icons = { Bell, Users, Wrench, UserPlus };
-
-const ActivityFeed = ({ activities }) => (
-  <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg">
-    <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">
-      Recent Activity
-    </h3>
-    <div className="space-y-4">
-      {activities.map((activity) => {
-        const IconComponent = icons[activity.icon] || Bell;
-        return (
-          <div key={activity.id} className="flex items-start space-x-3">
-            <div
-              className={`p-3 rounded-full ${activity.bgColor} ${activity.color}`}
-            >
-              <IconComponent className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                {activity.title}
-              </h4>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {activity.description}
-              </p>
-              <div className="flex items-center text-xs text-slate-400 mt-1">
-                <Clock className="w-3 h-3 mr-1.5" />
-                {activity.time}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      <div>
+        <p className="text-gray-400 text-sm font-medium tracking-wide uppercase">
+          {title}
+        </p>
+        <h3 className="text-3xl font-bold text-white mt-1 tracking-tight">
+          {value}
+        </h3>
+      </div>
     </div>
   </div>
 );
 
+const ActivityItem = ({ activity }) => {
+  const icons = { Bell, Users, Wrench, UserPlus };
+  const IconComponent = icons[activity.icon] || Bell;
+
+  return (
+    <div className="flex items-start space-x-4 p-4 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
+      <div
+        className={`p-3 rounded-full shrink-0 ${activity.bgColor} ${activity.color}`}
+      >
+        <IconComponent size={18} />
+      </div>
+      <div className="flex-1">
+        <div className="flex justify-between items-start">
+          <h4 className="text-sm font-bold text-gray-200">{activity.title}</h4>
+          <span className="text-xs text-gray-500 flex items-center">
+            <Clock size={12} className="mr-1" /> {activity.time}
+          </span>
+        </div>
+        <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+          {activity.description}
+        </p>
+      </div>
+    </div>
+  );
+};
+
 /* -------------------- Main Component -------------------- */
 
 export default function AdminHome() {
-  const [dashboardData, setDashboardData] = useState(null);
-  const [maintenanceData, setMaintenanceData] = useState([]); // State for ML Prediction
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // my-app/src/Dashboard/AdminHome.jsx
+  const [dashboardData, setDashboardData] = useState({
+    residentCount: 0,
+    visitorCount: 0,
+    duesSummary: { pending: 0 },
+    noticeCount: 0,
+  });
+  const [maintenanceData, setMaintenanceData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAllData = async () => {
-      // Start all requests simultaneously
-      const statsPromise = api.get("/api/admin/dashboard-stats");
-      const mlPromise = api.get("/api/analytics/maintenance-prediction");
+      try {
+        setLoading(true);
+        // Parallel fetching for speed
+        const [statsRes, mlRes] = await Promise.allSettled([
+          api.get("/api/admin/dashboard-stats"),
+          api.get("/api/analytics/maintenance-prediction"),
+        ]);
 
-      // Handle Stats separately so they show up as soon as they are ready
-      statsPromise
-        .then((res) => {
-          setDashboardData(res.data);
-          if (maintenanceData.length > 0) setIsLoading(false);
-        })
-        .catch((err) => setError("Failed to load dashboard data"));
+        // Handle Stats
+        if (statsRes.status === "fulfilled") {
+          setDashboardData(statsRes.value.data);
+        }
 
-      // Handle ML data without blocking the rest of the UI
-      mlPromise
-        .then((mlRes) => {
+        // Handle ML Data (Format it safely)
+        if (mlRes.status === "fulfilled" && mlRes.value.data) {
+          const { actual = [], predicted = [] } = mlRes.value.data;
           const combinedData = [
-            ...(mlRes.data.actual || []).map((d) => ({
-              ds: d.ds,
-              amount: d.y,
-              type: "actual",
-            })),
-            ...(mlRes.data.predicted || []).map((d) => ({
+            ...actual.map((d) => ({ ds: d.ds, amount: d.y, type: "Actual" })),
+            ...predicted.map((d) => ({
               ds: new Date(d.ds).toISOString().split("T")[0],
               amount: d.yhat,
-              type: "predicted",
+              type: "Predicted",
             })),
           ];
           setMaintenanceData(combinedData);
-        })
-        .catch((mlErr) => {
-          console.error("ML Prediction fetch error:", mlErr);
-        })
-        .finally(() => {
-          setIsLoading(false); // Stop loading regardless of ML success
-        });
+        }
+      } catch (error) {
+        console.error("Dashboard Load Error:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchAllData();
   }, []);
 
-  /* -------------------- Loading / Error -------------------- */
-
-  if (isLoading && !dashboardData) {
-    // Only block if we have NO data at all
-    return <div className="text-center p-6 text-gray-500">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[80vh]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
-  if (error) {
-    return <div className="text-center p-6 text-red-500">{error}</div>;
-  }
-
-  /* -------------------- Dynamic Data -------------------- */
-
-  const stats = [
-    {
-      title: "Residents",
-      value: dashboardData?.residentCount ?? 0,
-      icon: <Users size={24} />,
-      iconBg: "bg-blue-100 dark:bg-blue-900",
-      iconColor: "text-blue-600 dark:text-blue-400",
-    },
-    {
-      title: "Visitors Today",
-      value: dashboardData?.visitorCount ?? 0,
-      icon: <UserPlus size={24} />,
-      iconBg: "bg-green-100 dark:bg-green-900",
-      iconColor: "text-green-600 dark:text-green-400",
-    },
-    {
-      title: "Dues Pending",
-      value: `₹${dashboardData?.duesSummary?.pending?.toLocaleString("en-IN") ?? 0}`,
-      icon: <DollarSign size={24} />,
-      iconBg: "bg-yellow-100 dark:bg-yellow-900",
-      iconColor: "text-yellow-600 dark:text-yellow-400",
-    },
-    {
-      title: "Notices Issued",
-      value: dashboardData?.noticeCount ?? 0,
-      icon: <Bell size={24} />,
-      iconBg: "bg-purple-100 dark:bg-purple-900",
-      iconColor: "text-purple-600 dark:text-purple-400",
-    },
-  ];
 
   const activities = [
     {
       id: 1,
       icon: "Bell",
       title: "New Notice Posted",
-      description: "Annual meeting scheduled",
+      description: "Annual meeting scheduled for next week.",
       time: "2h ago",
-      bgColor: "bg-blue-100 dark:bg-blue-900",
-      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-500/20",
+      color: "text-blue-400",
     },
     {
       id: 2,
       icon: "Users",
       title: "Visitor Logged",
-      description: "John entered the premises",
+      description: "Delivery for Apt 101 registered at gate.",
       time: "4h ago",
-      bgColor: "bg-green-100 dark:bg-green-900",
-      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-500/20",
+      color: "text-green-400",
     },
     {
       id: 3,
       icon: "Wrench",
-      title: "Maintenance Work",
-      description: "Lift maintenance ongoing",
+      title: "Maintenance",
+      description: "Elevator B reported for inspection.",
       time: "6h ago",
-      bgColor: "bg-yellow-100 dark:bg-yellow-900",
-      color: "text-yellow-600 dark:text-yellow-400",
+      bgColor: "bg-yellow-500/20",
+      color: "text-yellow-400",
     },
   ];
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Admin Dashboard
-        </h1>
-        <div className="flex items-center text-sm font-medium text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full">
+    <div className="space-y-8 animate-fade-in-up">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white">Dashboard Overview</h1>
+          <p className="text-gray-400 mt-1">
+            Welcome back, Admin. Here's what's happening today.
+          </p>
+        </div>
+        <div className="px-4 py-2 bg-indigo-500/20 border border-indigo-500/30 rounded-full flex items-center text-indigo-300 text-sm font-medium shadow-[0_0_15px_rgba(99,102,241,0.2)]">
           <Brain size={16} className="mr-2" />
-          ML Insights Active
+          AI Insights Active
         </div>
       </div>
 
-      <StatsCards stats={stats} />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Residents"
+          value={dashboardData.residentCount}
+          icon={Users}
+          color="text-blue-500"
+          subColor="bg-blue-500/20"
+        />
+        <StatCard
+          title="Active Visitors"
+          value={dashboardData.visitorCount}
+          icon={UserPlus}
+          color="text-green-500"
+          subColor="bg-green-500/20"
+        />
+        <StatCard
+          title="Pending Dues"
+          value={`₹${(dashboardData.duesSummary?.pending || 0).toLocaleString()}`}
+          icon={DollarSign}
+          color="text-yellow-500"
+          subColor="bg-yellow-500/20"
+        />
+        <StatCard
+          title="Notices Issued"
+          value={dashboardData.noticeCount}
+          icon={Bell}
+          color="text-purple-500"
+          subColor="bg-purple-500/20"
+        />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6">
-        {/* ML Prediction Chart */}
-        <div
-          className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg"
-          style={{ height: "400px" }}
-        >
-          <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center">
-            Maintenance Cost Forecast (ML)
-          </h3>
-          <Chart
-            type="line"
-            data={maintenanceData}
-            dataKey="amount"
-            xAxis="ds"
-          />
+      {/* Main Content Split */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column (Charts) */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* AI Chart Section */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Activity size={20} className="text-indigo-400" />
+                  Maintenance Forecast
+                </h3>
+                <p className="text-sm text-gray-400">
+                  AI-predicted expenses vs actuals
+                </p>
+              </div>
+              <button className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white transition">
+                View Report
+              </button>
+            </div>
+            <div className="h-[350px] w-full">
+              {maintenanceData.length > 0 ? (
+                <Chart
+                  type="line"
+                  data={maintenanceData}
+                  dataKey="amount"
+                  xAxis="ds"
+                />
+              ) : (
+                <div className="h-full flex items-center justify-center text-gray-500 italic">
+                  No prediction data available yet.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Maintenance Schedule Component */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl shadow-lg overflow-hidden">
+            <MaintenanceSchedule schedule={[]} />
+          </div>
         </div>
 
-        <ActivityFeed activities={activities} />
-      </div>
+        {/* Right Column (Activity & Notices) */}
+        <div className="space-y-8">
+          {/* Recent Activity */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <TrendingUp size={20} className="text-green-400" />
+              Recent Activity
+            </h3>
+            <div className="space-y-2">
+              {activities.map((act) => (
+                <ActivityItem key={act.id} activity={act} />
+              ))}
+            </div>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <MaintenanceSchedule schedule={[]} />
-        <NoticeBoard notices={[]} />
+          {/* Notice Board Component */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl shadow-lg overflow-hidden">
+            <NoticeBoard notices={[]} />
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
