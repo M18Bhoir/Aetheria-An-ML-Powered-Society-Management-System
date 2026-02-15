@@ -19,6 +19,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  // src/LoginSignUp/Login.jsx
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage(null);
@@ -31,8 +33,12 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // FIX: Dynamically key the ID field based on the selected role
       const payload = {
-        userId: userId.trim(),
+        // If role is admin, send 'adminId', otherwise send 'userId'
+        ...(loginType === "admin"
+          ? { adminId: userId.trim() }
+          : { userId: userId.trim() }),
         password: password.trim(),
         role: loginType,
       };

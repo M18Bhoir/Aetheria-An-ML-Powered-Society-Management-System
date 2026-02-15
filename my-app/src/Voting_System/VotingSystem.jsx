@@ -240,7 +240,7 @@ export function PollDetail() {
     setVoteMessage(null);
 
     try {
-      await api.post(`/api/polls/vote/${id}`, {
+      await api.post(`/api/polls/${id}/vote`, {
         optionIndex: selectedOptionIndex,
       });
       setVoteMessage({ type: "success", text: "Your vote has been recorded!" });

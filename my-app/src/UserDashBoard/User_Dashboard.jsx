@@ -172,6 +172,68 @@ function User_Dashboard() {
     };
   };
 
+  const handlePayment = async () => {
+    if (!dues || dues.status === "Paid") return;
+
+    try {
+      // Create order
+      const orderRes = await api.post("/api/payment/create-order", {
+        amount: dues.amount,
+        dueId: dues._id,
+      });
+
+      const { orderId, amount } = orderRes.data;
+
+      // Open Razorpay checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_your_key_id",
+        amount: amount,
+        currency: "INR",
+        name: "Aetheria Society",
+        description: "Maintenance Dues Payment",
+        order_id: orderId,
+        handler: async (response) => {
+          try {
+            // Verify payment
+            const verifyRes = await api.post("/api/payment/verify-payment", {
+              order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              dueId: dues._id,
+            });
+
+            if (verifyRes.data.success) {
+              alert("Payment successful! Your dues have been paid.");
+              // Refresh dues data
+              const duesRes = await api.get("/api/user/dues");
+              setDues(duesRes.data.dues);
+            }
+          } catch (err) {
+            console.error("Payment verification failed:", err);
+            alert("Payment verification failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: userData.name || "",
+          email: userData.email || "",
+          contact: userData.phone || "",
+        },
+        theme: {
+          color: "#4F46E5",
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert(
+        err.response?.data?.message ||
+          "Failed to initiate payment. Please try again.",
+      );
+    }
+  };
+
   const duesStyle = getDuesCardStyle();
 
   const actions = [
@@ -256,9 +318,14 @@ function User_Dashboard() {
 
       {/* BENTO GRID: Overview Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {/* Card 1: Maintenance Dues (Glass) */}
+        {/* Card 1: Maintenance Dues (Glass) - Clickable for payment */}
         <div
-          className={`p-6 rounded-3xl backdrop-blur-md border shadow-lg flex flex-col justify-between ${duesStyle.bg}`}
+          onClick={handlePayment}
+          className={`p-6 rounded-3xl backdrop-blur-md border shadow-lg flex flex-col justify-between ${duesStyle.bg} ${
+            dues && dues.status !== "Paid"
+              ? "cursor-pointer hover:scale-[1.02] transition-transform"
+              : ""
+          }`}
         >
           <div className="flex justify-between items-start">
             <div className="p-3 bg-white/10 rounded-2xl">{duesStyle.icon}</div>
@@ -276,6 +343,9 @@ function User_Dashboard() {
               <p className="text-4xl font-bold tracking-tight">
                 ₹{dues?.amount?.toLocaleString("en-IN") || "0"}
               </p>
+            )}
+            {dues && dues.status !== "Paid" && (
+              <p className="text-xs text-gray-400 mt-2">Click to pay →</p>
             )}
           </div>
         </div>

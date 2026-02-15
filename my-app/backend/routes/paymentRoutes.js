@@ -17,6 +17,43 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// @route   POST /create-order
+// @desc    Create a Razorpay order for payment
+// @access  Private (User)
+router.post("/create-order", async (req, res) => {
+  try {
+    const { amount, dueId } = req.body;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid amount",
+      });
+    }
+
+    const options = {
+      amount: Math.round(amount * 100), // Razorpay expects amount in paise
+      currency: "INR",
+      receipt: dueId || `receipt_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    res.json({
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+    });
+  } catch (err) {
+    console.error("Error creating Razorpay order:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Failed to create order",
+    });
+  }
+});
+
 router.post("/verify-payment", async (req, res) => {
   try {
     const { order_id, razorpay_payment_id, razorpay_signature, dueId } =

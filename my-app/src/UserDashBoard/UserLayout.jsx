@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { LogOut, Menu } from "lucide-react"; // Switched to Lucide icons
+import { LogOut, Menu } from "lucide-react";
 import Sidebar from "../Components/Sidebar";
+import Footer from "../Components/Footer"; // Import the Footer component
 
 function UserLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -15,7 +16,6 @@ function UserLayout() {
   };
 
   return (
-    // Removed solid bg colors so body gradient from index.css shows through
     <div className="flex w-full min-h-screen text-gray-100">
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
@@ -23,7 +23,6 @@ function UserLayout() {
         {/* Glass Header */}
         <header className="flex justify-between items-center px-6 py-4 bg-white/5 backdrop-blur-md border-b border-white/10 z-10">
           <div className="flex items-center">
-            {/* Mobile toggle if needed, or just breadcrumbs/title */}
             {!isSidebarOpen && (
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -47,13 +46,19 @@ function UserLayout() {
         </header>
 
         {/* Main Content Area - Scrollable */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative">
-          {/* Optional: Content background glow */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar relative flex flex-col">
+          {/* Content background glow */}
           <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden -z-10">
             <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]"></div>
           </div>
 
-          <Outlet />
+          {/* Page Content */}
+          <div className="flex-1">
+            <Outlet />
+          </div>
+
+          {/* Footer added at the bottom */}
+          <Footer />
         </div>
       </div>
     </div>
