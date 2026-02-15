@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -8,6 +8,9 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+
+/* ================= CONTEXT IMPORT ================= */
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 
 /* ================= ADMIN IMPORTS ================= */
 import AdminDashboard from "./Dashboard/admin-dashboard";
@@ -55,36 +58,41 @@ import RaiseTicket from "./tickets/RaiseTicket";
 import TicketComments from "./tickets/TicketComments";
 import TrackTicket from "./tickets/TrackTickets";
 
+/* 🏙️ NEW COMMUNITY PAGES */
+import CommunityGallery from "./pages/CommunityGallery";
+import CommitteeMembers from "./pages/CommitteeMembers";
+import SocietyRules from "./pages/SocietyRules";
+import ContactUs from "./pages/ContactUs";
+
 import "./index.css";
 
-/* ================= PROTECTED ROUTE ================= */
-function ProtectedRoute() {
+/* ================= PROTECTED ROUTE (UPDATED) ================= */
+// Now uses AuthContext to prevent flickering and handle state globally
+function ProtectedRoute({ role }) {
+  const { user, loading } = useContext(AuthContext);
   const location = useLocation();
 
-  // Initialize state directly from localStorage to avoid the 1-second delay/flicker
-  const [auth, setAuth] = useState(() => {
-    const token = localStorage.getItem("token");
-    const admin = localStorage.getItem("admin");
-    const user = localStorage.getItem("user");
+  if (loading) {
+    // Show a glass-morphic loader while checking session
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
+        <div className="animate-pulse">Loading Aetheria...</div>
+      </div>
+    );
+  }
 
-    return {
-      isAuthenticated: !!token,
-      role: admin ? "admin" : user ? "user" : null,
-    };
-  });
-
-  // 🔒 Not logged in - check immediately
-  if (!auth.isAuthenticated) {
+  // 🔒 Not logged in
+  if (!user) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   // 🛡 Role-based protection
-  if (auth.role === "admin" && location.pathname.startsWith("/dashboard")) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  if (auth.role === "user" && location.pathname.startsWith("/admin")) {
-    return <Navigate to="/dashboard" replace />;
+  // If route requires a specific role (e.g. 'admin') and user doesn't have it
+  if (role && user.role !== role) {
+    // Redirect to their appropriate dashboard
+    return (
+      <Navigate to={user.role === "admin" ? "/admin" : "/dashboard"} replace />
+    );
   }
 
   return <Outlet />;
@@ -93,82 +101,112 @@ function ProtectedRoute() {
 /* ================= MAIN APP ================= */
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* ===== PUBLIC ROUTES ===== */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    // 1. Wrap entire app in AuthProvider
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* ===== PUBLIC ROUTES ===== */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        {/* ===== PROTECTED ROUTES ===== */}
-        <Route element={<ProtectedRoute />}>
-          {/* ===== USER DASHBOARD ===== */}
-          <Route path="/dashboard" element={<UserLayout />}>
-            <Route index element={<UserDashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="voting" element={<PollList />} />
-            <Route path="poll/:id" element={<PollDetail />} />
-            <Route path="booking" element={<AmenityBooking />} />
-            <Route path="my-bookings" element={<MyBookings />} />
-            <Route path="request-guest-pass" element={<RequestGuestPass />} />
-            <Route path="my-guest-passes" element={<MyGuestPasses />} />
-            <Route path="marketplace" element={<MarketplaceList />} />
-            <Route path="marketplace/new" element={<CreateMarketplaceItem />} />
-            <Route
-              path="marketplace/:itemId"
-              element={<MarketplaceItemDetail />}
-            />
-            <Route path="my-listings" element={<MyListings />} />
+          {/* ===== USER ROUTES (Protected) ===== */}
+          <Route element={<ProtectedRoute role="user" />}>
+            <Route path="/dashboard" element={<UserLayout />}>
+              <Route index element={<UserDashboard />} />
+              <Route path="profile" element={<Profile />} />
 
-            {/* 🎫 USER TICKETS */}
-            <Route path="tickets">
-              <Route index element={<MyTickets />} />
-              <Route path="new" element={<RaiseTicket />} />
-              <Route path="track" element={<TrackTicket />} />
-              <Route path=":ticketId" element={<TicketComments />} />
+              {/* Voting */}
+              <Route path="voting" element={<PollList />} />
+              <Route path="poll/:id" element={<PollDetail />} />
+
+              {/* Booking */}
+              <Route path="booking" element={<AmenityBooking />} />
+              <Route path="my-bookings" element={<MyBookings />} />
+              <Route path="request-guest-pass" element={<RequestGuestPass />} />
+              <Route path="my-guest-passes" element={<MyGuestPasses />} />
+
+              {/* Marketplace */}
+              <Route path="marketplace" element={<MarketplaceList />} />
+              <Route
+                path="marketplace/new"
+                element={<CreateMarketplaceItem />}
+              />
+              <Route
+                path="marketplace/:itemId"
+                element={<MarketplaceItemDetail />}
+              />
+              <Route path="my-listings" element={<MyListings />} />
+
+              {/* Tickets */}
+              <Route path="tickets">
+                <Route index element={<MyTickets />} />
+                <Route path="new" element={<RaiseTicket />} />
+                <Route path="track" element={<TrackTicket />} />
+                <Route path=":ticketId" element={<TicketComments />} />
+              </Route>
+
+              {/* 🌟 NEW COMMUNITY ROUTES */}
+              <Route path="gallery" element={<CommunityGallery />} />
+              <Route path="members" element={<CommitteeMembers />} />
+              <Route path="rules" element={<SocietyRules />} />
+              <Route path="contact" element={<ContactUs />} />
             </Route>
           </Route>
 
-          {/* ===== ADMIN DASHBOARD ===== */}
-          <Route path="/admin" element={<AdminDashboard />}>
-            <Route index element={<AdminHome />} />
-            <Route path="residents" element={<ResidentList />} />
-            <Route path="create-dues" element={<CreateDues />} />
-            <Route path="manage-dues" element={<ManageDues />} />
-            <Route path="manage-bookings" element={<ManageBookings />} />
-            <Route path="guest-requests" element={<ManageGuestRequests />} />
-            <Route path="maintenance" element={<Maintenance />} />
-            <Route path="notices" element={<Notices />} />
-            <Route path="manage-polls" element={<ManagePolls />} />
-            <Route path="create-poll" element={<CreatePoll />} />
-            <Route path="poll/:id" element={<PollDetail />} />
-            <Route path="expense-logger" element={<ExpenseLogger />} />
-            <Route path="manage-rentals" element={<ManageRentals />} />
+          {/* ===== ADMIN ROUTES (Protected) ===== */}
+          <Route element={<ProtectedRoute role="admin" />}>
+            <Route path="/admin" element={<AdminDashboard />}>
+              <Route index element={<AdminHome />} />
+              <Route path="residents" element={<ResidentList />} />
 
-            {/* 📊 ADMIN ANALYTICS */}
-            <Route path="analytics" element={<AdminAnalyticsDashboard />} />
+              {/* Dues & Finance */}
+              <Route path="create-dues" element={<CreateDues />} />
+              <Route path="manage-dues" element={<ManageDues />} />
+              <Route path="expense-logger" element={<ExpenseLogger />} />
 
-            {/* 🎫 ADMIN TICKETS */}
-            <Route path="tickets/overview" element={<TicketOverview />} />
-            <Route path="tickets/sla-alerts" element={<SLAAlerts />} />
-            <Route path="tickets/reports" element={<TicketReports />} />
+              {/* Operations */}
+              <Route path="manage-bookings" element={<ManageBookings />} />
+              <Route path="guest-requests" element={<ManageGuestRequests />} />
+              <Route path="maintenance" element={<Maintenance />} />
+              <Route path="notices" element={<Notices />} />
+              <Route path="manage-rentals" element={<ManageRentals />} />
+
+              {/* Voting */}
+              <Route path="manage-polls" element={<ManagePolls />} />
+              <Route path="create-poll" element={<CreatePoll />} />
+              <Route path="poll/:id" element={<PollDetail />} />
+
+              {/* Analytics */}
+              <Route path="analytics" element={<AdminAnalyticsDashboard />} />
+
+              {/* Tickets */}
+              <Route path="tickets/overview" element={<TicketOverview />} />
+              <Route path="tickets/sla-alerts" element={<SLAAlerts />} />
+              <Route path="tickets/reports" element={<TicketReports />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* ===== 404 ===== */}
-        <Route
-          path="*"
-          element={
-            <div className="flex flex-col items-center justify-center min-h-screen">
-              <h1 className="text-4xl font-bold mb-4">404 - Page Not Found</h1>
-              <Link to="/" className="text-blue-500 hover:underline">
-                Go back home
-              </Link>
-            </div>
-          }
-        />
-      </Routes>
-    </Router>
+          {/* ===== 404 ===== */}
+          <Route
+            path="*"
+            element={
+              <div className="flex flex-col items-center justify-center min-h-screen bg-[#0f0f1e] text-white">
+                <h1 className="text-4xl font-bold mb-4">
+                  404 - Page Not Found
+                </h1>
+                <Link
+                  to="/"
+                  className="text-blue-400 hover:text-blue-300 transition-colors underline"
+                >
+                  Go back home
+                </Link>
+              </div>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
