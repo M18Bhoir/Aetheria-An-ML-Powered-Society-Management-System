@@ -45,7 +45,7 @@ import mlDataRoutes from "./routes/mlData.js";
 import protect from "./middleware/auth.js";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 /* ================= CONNECT DB ================= */
 connectDB();
@@ -53,10 +53,7 @@ connectDB();
 /* ================= GLOBAL MIDDLEWARE ================= */
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", // Vite dev
-      "http://localhost:3000", // CRA (if any)
-    ],
+    origin: true,
     credentials: true,
   }),
 );

@@ -1,5 +1,4 @@
 // backend/routes/paymentRoutes.js
-
 import express from "express";
 import Razorpay from "razorpay";
 import crypto from "crypto";
@@ -7,21 +6,35 @@ import Dues from "../models/Dues.js";
 
 const router = express.Router();
 
-// 🔒 Fail fast if keys missing
-if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  throw new Error("Razorpay keys are missing in environment variables");
+// ---------------------------------------------------------
+// REPLACED: Strict check with Conditional Initialization
+// ---------------------------------------------------------
+let razorpay = null;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+} else {
+  console.warn(
+    "WARNING: Razorpay keys not set. Payment features will be unavailable.",
+  );
 }
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+// ---------------------------------------------------------
 
 // @route   POST /create-order
 // @desc    Create a Razorpay order for payment
 // @access  Private (User)
 router.post("/create-order", async (req, res) => {
   try {
+    // SAFETY CHECK: Ensure razorpay is initialized before using it
+    if (!razorpay) {
+      return res.status(503).json({
+        success: false,
+        message: "Payment service is not configured. Please contact admin.",
+      });
+    }
+
     const { amount, dueId } = req.body;
 
     if (!amount || amount <= 0) {
@@ -56,6 +69,14 @@ router.post("/create-order", async (req, res) => {
 
 router.post("/verify-payment", async (req, res) => {
   try {
+    // Check if razorpay instance exists
+    if (!razorpay) {
+      return res.status(503).json({
+        success: false,
+        message: "Payment service is not configured. Please contact admin.",
+      });
+    }
+
     const { order_id, razorpay_payment_id, razorpay_signature, dueId } =
       req.body;
 

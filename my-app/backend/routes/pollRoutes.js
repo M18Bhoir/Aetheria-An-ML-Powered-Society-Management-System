@@ -56,12 +56,23 @@ router.get("/:id", protect, async (req, res) => {
 // @route   POST /:pollId/vote
 // @desc    Vote on a poll (User Only)
 // @access  Private (User)
+// ... existing imports
+
+// @route   POST /:pollId/vote
 router.post("/:pollId/vote", protect, async (req, res) => {
   try {
     const poll = await Poll.findById(req.params.pollId);
     if (!poll) {
       return res.status(404).json({ msg: "Poll not found" });
     }
+
+    // 1. CHECK IF USER ALREADY VOTED
+    if (poll.voters.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ msg: "You have already voted in this poll." });
+    }
+
     const { optionIndex } = req.body;
     if (
       optionIndex === null ||
@@ -70,7 +81,13 @@ router.post("/:pollId/vote", protect, async (req, res) => {
     ) {
       return res.status(400).json({ msg: "Invalid option selected." });
     }
+
+    // 2. RECORD THE VOTE
     poll.options[optionIndex].votes += 1;
+
+    // 3. ADD USER TO VOTERS ARRAY
+    poll.voters.push(req.user.id);
+
     await poll.save();
     res.json(poll);
   } catch (err) {
@@ -78,7 +95,6 @@ router.post("/:pollId/vote", protect, async (req, res) => {
     res.status(500).json({ msg: "Server error" });
   }
 });
-
 // @route   DELETE /:id
 // @desc    Delete a poll (Admin Only)
 // @access  Private (Admin Only)
