@@ -8,12 +8,13 @@ const router = express.Router();
 // @route   POST /
 // @desc    Admin creates a poll
 // @access  Private (Admin Only)
-router.post("/", adminAuth, async (req, res) => {
+// backend/routes/pollRoutes.js
+router.post("/", protect, async (req, res) => {
+  // Changed adminAuth to protect
   try {
-    const poll = await Poll.create({ ...req.body, createdBy: req.admin.id });
+    const poll = await Poll.create({ ...req.body, createdBy: req.user.id }); // Use req.user.id
     res.json(poll);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 });

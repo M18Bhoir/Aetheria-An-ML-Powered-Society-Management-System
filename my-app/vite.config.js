@@ -1,15 +1,19 @@
+import { defineConfig } from "vite"; // Add this import
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     host: "0.0.0.0",
-    port: 5000,
+    port: 5173, // Default Vite port is usually 5173; 5000 is common for backends
     allowedHosts: true,
     proxy: {
-      "/api": "http://localhost:5000",
-      "/api": "http://localhost:3000",
+      "/api": {
+        target: "http://localhost:5000", // Point this to your actual backend port
+        changeOrigin: true,
+      },
     },
   },
 });

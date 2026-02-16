@@ -1,20 +1,17 @@
-import express from 'express';
-import mongoose from 'mongoose';
-import protect from '../middleware/auth.js';
-import MarketplaceItem from '../models/MarketplaceItem.js';
+import express from "express";
+import mongoose from "mongoose";
+import protect from "../middleware/auth.js";
+import MarketplaceItem from "../models/MarketplaceItem.js";
+import multer from "multer";
 
 const router = express.Router();
 
-/* 
-=========================================
-  POST /api/marketplace
-  @desc   Create a new marketplace item
-  @access Private
-=========================================
-*/
-router.post('/', protect, async (req, res) => {
+const upload = multer({ dest: "public/uploads/" }); // Basic setup
+
+router.post("/", protect, upload.single("image"), async (req, res) => {
   try {
-    const { title, description, price, category, condition, imageUrl } = req.body;
+    const { title, description, price, category, condition } = req.body;
+    const imageUrl = req.file ? `/uploads/${req.file.filename}` : ""; // Handle uploaded file
 
     const newItem = new MarketplaceItem({
       title,
@@ -22,19 +19,19 @@ router.post('/', protect, async (req, res) => {
       price,
       category,
       condition,
-      imageUrl: imageUrl || '',
-      seller: req.user.id, // Authenticated user becomes seller
-      status: 'Available', // Default status
+      imageUrl,
+      seller: req.user.id,
+      status: "Available",
     });
 
     const createdItem = await newItem.save();
     res.status(201).json(createdItem);
   } catch (err) {
     console.error(err);
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res.status(400).json({ msg: err.message });
     }
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -45,15 +42,15 @@ router.post('/', protect, async (req, res) => {
   @access Private
 =========================================
 */
-router.get('/', protect, async (req, res) => {
+router.get("/", protect, async (req, res) => {
   try {
-    const items = await MarketplaceItem.find({ status: 'Available' })
-      .populate('seller', 'name userId')
+    const items = await MarketplaceItem.find({ status: "Available" })
+      .populate("seller", "name userId")
       .sort({ createdAt: -1 });
     res.json(items);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -65,14 +62,15 @@ router.get('/', protect, async (req, res) => {
 =========================================
 */
 // ⚠️ This must come BEFORE '/:id' route
-router.get('/my-listings', protect, async (req, res) => {
+router.get("/my-listings", protect, async (req, res) => {
   try {
-    const items = await MarketplaceItem.find({ seller: req.user.id })
-      .sort({ createdAt: -1 });
+    const items = await MarketplaceItem.find({ seller: req.user.id }).sort({
+      createdAt: -1,
+    });
     res.json(items);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -83,26 +81,28 @@ router.get('/my-listings', protect, async (req, res) => {
   @access Private
 =========================================
 */
-router.get('/:id', protect, async (req, res) => {
+router.get("/:id", protect, async (req, res) => {
   try {
     const { id } = req.params;
 
     // Validate ObjectId before querying
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ msg: 'Invalid item ID format' });
+      return res.status(400).json({ msg: "Invalid item ID format" });
     }
 
-    const item = await MarketplaceItem.findById(id)
-      .populate('seller', 'name userId email');
+    const item = await MarketplaceItem.findById(id).populate(
+      "seller",
+      "name userId email",
+    );
 
     if (!item) {
-      return res.status(404).json({ msg: 'Item not found' });
+      return res.status(404).json({ msg: "Item not found" });
     }
 
     res.json(item);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -113,24 +113,25 @@ router.get('/:id', protect, async (req, res) => {
   @access Private (Seller only)
 =========================================
 */
-router.put('/:id', protect, async (req, res) => {
+router.put("/:id", protect, async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ msg: 'Invalid item ID format' });
+      return res.status(400).json({ msg: "Invalid item ID format" });
     }
 
-    const { title, description, price, category, condition, imageUrl, status } = req.body;
+    const { title, description, price, category, condition, imageUrl, status } =
+      req.body;
 
     let item = await MarketplaceItem.findById(id);
     if (!item) {
-      return res.status(404).json({ msg: 'Item not found' });
+      return res.status(404).json({ msg: "Item not found" });
     }
 
     // Ensure the logged-in user is the seller
     if (item.seller.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
+      return res.status(401).json({ msg: "User not authorized" });
     }
 
     // Update only provided fields
@@ -146,10 +147,10 @@ router.put('/:id', protect, async (req, res) => {
     res.json(updatedItem);
   } catch (err) {
     console.error(err);
-    if (err.name === 'ValidationError') {
+    if (err.name === "ValidationError") {
       return res.status(400).json({ msg: err.message });
     }
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 
@@ -160,29 +161,29 @@ router.put('/:id', protect, async (req, res) => {
   @access Private (Seller only)
 =========================================
 */
-router.delete('/:id', protect, async (req, res) => {
+router.delete("/:id", protect, async (req, res) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ msg: 'Invalid item ID format' });
+      return res.status(400).json({ msg: "Invalid item ID format" });
     }
 
     const item = await MarketplaceItem.findById(id);
     if (!item) {
-      return res.status(404).json({ msg: 'Item not found' });
+      return res.status(404).json({ msg: "Item not found" });
     }
 
     // Check if the user deleting is the seller
     if (item.seller.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
+      return res.status(401).json({ msg: "User not authorized" });
     }
 
     await item.deleteOne();
-    res.json({ msg: 'Item removed successfully' });
+    res.json({ msg: "Item removed successfully" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: "Server error" });
   }
 });
 

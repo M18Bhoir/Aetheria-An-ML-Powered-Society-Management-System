@@ -18,7 +18,7 @@ function MarketplaceList() {
     setError("");
     try {
       const res = await api.get("/api/marketplace");
-      setItems(res.data.items || []);
+      setItems(res.data || []);
     } catch (err) {
       console.error("Failed to fetch marketplace items:", err);
       if (err.message !== "Unauthorized access - Redirecting to login.") {
