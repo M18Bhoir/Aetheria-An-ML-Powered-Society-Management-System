@@ -78,7 +78,7 @@ function MarketplaceItemDetail() {
   return (
     <div className="max-w-6xl mx-auto p-4 animate-fade-in-up">
       <button
-        onClick={() => navigate("/marketplace")}
+        onClick={() => navigate("/dashboard/marketplace")}
         className="flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft size={16} className="mr-1" />

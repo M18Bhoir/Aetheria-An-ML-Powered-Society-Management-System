@@ -109,6 +109,7 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/contact" element={<ContactUs />} />
 
           {/* ===== USER ROUTES (Protected) ===== */}
           <Route element={<ProtectedRoute role="user" />}>

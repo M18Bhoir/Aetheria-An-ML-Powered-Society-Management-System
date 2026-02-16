@@ -20,8 +20,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        // 👉 Make sure your baseURL in api.js includes "/api"
-        const { data } = await api.get("/user/profile");
+        const { data } = await api.get("/api/user/profile");
 
         setFormData({
           name: data.name || "",
@@ -59,7 +58,7 @@ const Profile = () => {
     }
 
     try {
-      await api.put("/user/profile", formData);
+      await api.put("/api/user/profile", formData);
 
       setMessage({
         type: "success",

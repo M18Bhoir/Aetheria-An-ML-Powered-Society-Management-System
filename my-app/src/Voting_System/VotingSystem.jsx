@@ -18,6 +18,7 @@ export function PollList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const isAdmin = !!localStorage.getItem("admin");
 
   const fetchPolls = async () => {
     setLoading(true);
@@ -73,13 +74,15 @@ export function PollList() {
           </p>
         </div>
 
-        <button
-          onClick={() => navigate("/dashboard/create-poll")} // Ensure this route exists in App.jsx or adjust path
-          className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 rounded-xl text-white font-bold shadow-lg transition-all transform hover:-translate-y-0.5"
-        >
-          <Plus size={18} className="mr-2" />
-          Create New Poll
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/admin/create-poll")}
+            className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 rounded-xl text-white font-bold shadow-lg transition-all transform hover:-translate-y-0.5"
+          >
+            <Plus size={18} className="mr-2" />
+            Create New Poll
+          </button>
+        )}
       </div>
 
       {/* Loading & Error States */}

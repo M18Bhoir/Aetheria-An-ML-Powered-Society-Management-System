@@ -51,10 +51,12 @@ router.post("/signup", async (req, res) => {
 
 /* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
-  const { userId, password, role } = req.body;
+  const { userId, adminId, password, role } = req.body;
 
   try {
-    if (!userId || !password || !role) {
+    // Accept adminId for admin role; userId for resident role
+    const identifier = role === "admin" ? adminId || userId : userId;
+    if (!identifier || !password || !role) {
       return res.status(400).json({ msg: "Missing credentials" });
     }
 
@@ -62,13 +64,13 @@ router.post("/login", async (req, res) => {
     let payload;
 
     if (role === "admin") {
-      account = await Admin.findOne({ adminId: userId });
+      account = await Admin.findOne({ adminId: identifier });
       if (!account || !(await account.matchPassword(password))) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
       payload = { admin: { id: account._id } };
     } else {
-      account = await User.findOne({ userId });
+      account = await User.findOne({ userId: identifier });
       if (!account || !(await account.matchPassword(password))) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }

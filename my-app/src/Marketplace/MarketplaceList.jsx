@@ -58,14 +58,14 @@ function MarketplaceList() {
             <RefreshCw size={20} />
           </button>
           <button
-            onClick={() => navigate("/marketplace/create")}
+            onClick={() => navigate("/dashboard/marketplace/new")}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all"
           >
             <PlusCircle size={20} />
             Sell Item
           </button>
           <button
-            onClick={() => navigate("/marketplace/my-listings")}
+            onClick={() => navigate("/dashboard/my-listings")}
             className="flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all"
           >
             <Tag size={20} />
@@ -107,7 +107,7 @@ function MarketplaceList() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {items.map((item) => (
             <Link
-              to={`/marketplace/item/${item._id}`}
+              to={`/dashboard/marketplace/${item._id}`}
               key={item._id}
               className="group block"
             >

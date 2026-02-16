@@ -78,7 +78,7 @@ function CreateMarketplaceItem() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMessage({ type: "success", text: "Item listed successfully!" });
-      setTimeout(() => navigate("/marketplace"), 1500);
+      setTimeout(() => navigate("/dashboard/marketplace"), 1500);
     } catch (err) {
       console.error("Error creating item:", err);
       setMessage({

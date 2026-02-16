@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema(
       required: [true, "Phone number is required for OTP verification"],
       unique: true,
       default: "", // Stores +918652718080
-      role: { type: String, enum: ["resident", "admin"], default: "resident" },
     },
+    role: { type: String, enum: ["resident", "admin"], default: "resident" },
     password: {
       type: String,
       required: true,

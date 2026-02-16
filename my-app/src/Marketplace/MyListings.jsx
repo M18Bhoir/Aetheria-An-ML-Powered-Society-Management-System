@@ -76,7 +76,7 @@ function MyListings() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <button
-            onClick={() => navigate("/marketplace")}
+          onClick={() => navigate("/dashboard/marketplace")}
             className="flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-2"
           >
             <ArrowLeft size={16} className="mr-1" />
@@ -92,7 +92,7 @@ function MyListings() {
         </div>
 
         <button
-          onClick={() => navigate("/marketplace/create")}
+          onClick={() => navigate("/dashboard/marketplace/new")}
           className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 rounded-xl text-white font-bold shadow-lg transition-all transform hover:-translate-y-0.5"
         >
           <PlusCircle size={18} className="mr-2" />

@@ -107,6 +107,25 @@ router.get("/all", adminAuth, async (req, res) => {
 // =================================================================
 
 /**
+ * @route   GET /api/tickets/summary
+ * @desc    Get counts of user's tickets by status
+ */
+router.get("/summary", protect, async (req, res) => {
+  try {
+    const [open, inProgress] = await Promise.all([
+      Ticket.countDocuments({ createdBy: req.user._id, status: "Open" }),
+      Ticket.countDocuments({
+        createdBy: req.user._id,
+        status: { $in: ["Assigned", "In Progress", "Pending Closure"] },
+      }),
+    ]);
+    res.json({ open, inProgress });
+  } catch (err) {
+    res.status(500).json({ msg: "Failed to load ticket summary" });
+  }
+});
+
+/**
  * @route   POST /api/tickets/
  * @desc    Create a new ticket (Resident)
  */

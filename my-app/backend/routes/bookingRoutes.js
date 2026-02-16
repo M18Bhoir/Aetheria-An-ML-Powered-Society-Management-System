@@ -30,6 +30,33 @@ router.get("/my", protect, async (req, res) => {
   }
 });
 
+// GET /api/bookings -> Query availability/conflicts by amenity and date range
+router.get("/", protect, async (req, res) => {
+  try {
+    const { amenityName, startDate, endDate } = req.query;
+    if (!amenityName || !startDate) {
+      return res
+        .status(400)
+        .json({ message: "amenityName and startDate are required" });
+    }
+    const startOfDay = new Date(startDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(endDate || startDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const conflicts = await Booking.find({
+      amenityName,
+      startTime: { $lte: endOfDay },
+      endTime: { $gte: startOfDay },
+    })
+      .sort({ startTime: 1 })
+      .lean();
+    res.json(conflicts);
+  } catch (err) {
+    res.status(500).json({ message: "Server error fetching bookings" });
+  }
+});
+
 router.post("/", protect, async (req, res) => {
   const { amenityName, eventDescription, startTime, endTime } = req.body;
   const userId = req.user.id;
