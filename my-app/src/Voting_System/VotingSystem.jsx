@@ -45,6 +45,9 @@ export function PollList() {
   }, []);
 
   const handleVote = async (pollId, optionIndex) => {
+    if (!window.confirm("Confirm your vote? This action cannot be undone.")) {
+      return;
+    }
     try {
       await api.post(`/api/polls/${pollId}/vote`, { optionIndex });
       fetchPolls(); // Refresh to show new results
@@ -74,15 +77,15 @@ export function PollList() {
           </p>
         </div>
 
-        {isAdmin && (
-          <button
-            onClick={() => navigate("/admin/create-poll")}
-            className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 rounded-xl text-white font-bold shadow-lg transition-all transform hover:-translate-y-0.5"
-          >
-            <Plus size={18} className="mr-2" />
-            Create New Poll
-          </button>
-        )}
+        <button
+          onClick={() =>
+            navigate(isAdmin ? "/admin/create-poll" : "/dashboard/create-poll")
+          }
+          className="flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 rounded-xl text-white font-bold shadow-lg transition-all transform hover:-translate-y-0.5"
+        >
+          <Plus size={18} className="mr-2" />
+          Create New Poll
+        </button>
       </div>
 
       {/* Loading & Error States */}
@@ -243,6 +246,13 @@ export function PollDetail() {
     setVoteMessage(null);
 
     try {
+      if (
+        !window.confirm(
+          "Are you sure? Your vote will be recorded and cannot be changed.",
+        )
+      ) {
+        return;
+      }
       await api.post(`/api/polls/${id}/vote`, {
         optionIndex: selectedOptionIndex,
       });
@@ -340,57 +350,53 @@ export function PollDetail() {
           </div>
         )}
 
-        {/* Voting Options (Hidden if Admin) */}
-        {!isAdmin && (
-          <div className="space-y-3 mb-8">
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Select an option
-            </p>
-            {poll.options.map((option, index) => (
-              <label
-                key={index}
-                className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer border transition-all duration-200 group
+        {/* Voting Options */}
+        <div className="space-y-3 mb-8">
+          <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">
+            Select an option
+          </p>
+          {poll.options.map((option, index) => (
+            <label
+              key={index}
+              className={`flex items-center gap-4 p-4 rounded-xl cursor-pointer border transition-all duration-200 group
                             ${
                               selectedOptionIndex === index
                                 ? "bg-blue-600/20 border-blue-500/50 shadow-[0_0_15px_rgba(37,99,235,0.2)]"
                                 : "bg-black/20 border-white/5 hover:bg-white/5 hover:border-white/10"
                             }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0
+            >
+              <div
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0
                             ${selectedOptionIndex === index ? "border-blue-400" : "border-gray-500 group-hover:border-gray-300"}`}
-                >
-                  {selectedOptionIndex === index && (
-                    <div className="w-2.5 h-2.5 bg-blue-400 rounded-full"></div>
-                  )}
-                </div>
-                <input
-                  type="radio"
-                  name="pollOption"
-                  value={index}
-                  checked={selectedOptionIndex === index}
-                  onChange={() => setSelectedOptionIndex(index)}
-                  className="hidden"
-                />
-                <span
-                  className={`font-medium ${selectedOptionIndex === index ? "text-white" : "text-gray-300 group-hover:text-white"}`}
-                >
-                  {option.text}
-                </span>
-              </label>
-            ))}
-          </div>
-        )}
+              >
+                {selectedOptionIndex === index && (
+                  <div className="w-2.5 h-2.5 bg-blue-400 rounded-full"></div>
+                )}
+              </div>
+              <input
+                type="radio"
+                name="pollOption"
+                value={index}
+                checked={selectedOptionIndex === index}
+                onChange={() => setSelectedOptionIndex(index)}
+                className="hidden"
+              />
+              <span
+                className={`font-medium ${selectedOptionIndex === index ? "text-white" : "text-gray-300 group-hover:text-white"}`}
+              >
+                {option.text}
+              </span>
+            </label>
+          ))}
+        </div>
 
-        {/* Submit Button (Hidden if Admin) */}
-        {!isAdmin && (
-          <button
-            onClick={handleVote}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mb-8"
-          >
-            Submit Vote <Send size={16} />
-          </button>
-        )}
+        {/* Submit Vote */}
+        <button
+          onClick={handleVote}
+          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 mb-8"
+        >
+          Submit Vote <Send size={16} />
+        </button>
 
         {/* Results Section */}
         <div className="bg-black/20 rounded-2xl p-6 border border-white/5">

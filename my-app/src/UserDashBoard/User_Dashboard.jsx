@@ -14,6 +14,9 @@ import {
   ArrowRight,
   Ticket,
   MessageCircle,
+  Info,
+  Users,
+  Key,
 } from "lucide-react";
 import { loadScript } from "../utils/loadScript";
 
@@ -21,31 +24,54 @@ import { loadScript } from "../utils/loadScript";
 const DashboardCard = ({
   title,
   description,
+  intro,
   icon,
   path,
   colorClass = "bg-white/5",
 }) => {
   const navigate = useNavigate();
+  const [showInfo, setShowInfo] = useState(false);
 
   return (
-    <button
+    <div
       onClick={() => navigate(path)}
-      className={`group relative p-6 ${colorClass} backdrop-blur-md border border-white/10 rounded-3xl shadow-lg hover:shadow-2xl hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 text-left text-white overflow-hidden`}
+      className={`group relative p-6 ${colorClass} backdrop-blur-md border border-white/10 rounded-3xl shadow-lg text-left text-white overflow-hidden cursor-pointer`}
     >
-      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
         <ArrowRight size={48} />
       </div>
 
       <div className="flex flex-col h-full justify-between relative z-10">
-        <div className="p-3 bg-white/10 w-fit rounded-2xl text-white mb-4 border border-white/10 group-hover:scale-110 transition-transform">
-          {icon}
+        <div className="flex items-start justify-between gap-3">
+          <div className="p-3 bg-white/10 w-fit rounded-2xl text-white mb-4 border border-white/10 group-hover:scale-110 transition-transform">
+            {icon}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowInfo((v) => !v);
+            }}
+            className="ml-auto p-2 rounded-lg bg-white/10 border border-white/10 hover:bg-white/20"
+            title="About this service"
+            aria-label="About this service"
+          >
+            <Info size={16} />
+          </button>
         </div>
         <div>
           <h3 className="text-lg font-bold tracking-wide">{title}</h3>
           <p className="text-sm text-gray-300 mt-1">{description}</p>
         </div>
       </div>
-    </button>
+      {showInfo && (
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="absolute inset-x-4 bottom-4 bg-black/70 border border-white/10 rounded-2xl p-4 text-sm text-gray-200 z-30"
+        >
+          {intro || description}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -71,7 +97,7 @@ const UserNoticeBoard = () => {
   return (
     <div className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl shadow-lg text-white h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold">📢 Notice Board</h3>
+        <h3 className="text-lg font-bold">Notice Board</h3>
         <span className="text-xs px-2 py-1 bg-white/10 rounded-full">
           Recent
         </span>
@@ -182,11 +208,28 @@ function User_Dashboard() {
         dueId: dues._id,
       });
 
-      const { orderId, amount } = orderRes.data;
+      if (!orderRes.data?.success) {
+        alert(
+          orderRes.data?.message ||
+            "Payment service unavailable. Please contact admin.",
+        );
+        return;
+      }
+
+      const { orderId, amount, keyId } = orderRes.data;
+      const finalKey =
+        keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || undefined;
+      if (!finalKey) {
+        console.warn("Razorpay keyId missing in response and VITE var.");
+        alert(
+          "Payment configuration missing (Razorpay key). Contact admin to set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET on server.",
+        );
+        return;
+      }
 
       // Open Razorpay checkout
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_your_key_id",
+        key: finalKey,
         amount: amount,
         currency: "INR",
         name: "Aetheria Society",
@@ -204,6 +247,33 @@ function User_Dashboard() {
 
             if (verifyRes.data.success) {
               alert("Payment successful! Your dues have been paid.");
+              // Generate and download receipt PDF
+              try {
+                const { jsPDF } = await import("jspdf");
+                const pdf = new jsPDF();
+                const paidAt = new Date();
+                pdf.setFontSize(16);
+                pdf.text("Aetheria Society - Payment Receipt", 14, 20);
+                pdf.setFontSize(11);
+                pdf.text(`Resident: ${userData.name || "-"}`, 14, 35);
+                pdf.text(`Email: ${userData.email || "-"}`, 14, 43);
+                pdf.text(
+                  `Amount: ₹${Number(dues.amount).toLocaleString("en-IN")}`,
+                  14,
+                  51,
+                );
+                pdf.text(`Order ID: ${response.razorpay_order_id}`, 14, 59);
+                pdf.text(`Payment ID: ${response.razorpay_payment_id}`, 14, 67);
+                pdf.text(`Paid On: ${paidAt.toLocaleString()}`, 14, 75);
+                pdf.text(
+                  "Thank you for your payment. This is a system-generated receipt.",
+                  14,
+                  91,
+                );
+                pdf.save(`Receipt_${response.razorpay_order_id}.pdf`);
+              } catch (e) {
+                console.warn("Failed to generate PDF receipt:", e);
+              }
               // Refresh dues data
               const duesRes = await api.get("/api/user/dues");
               setDues(duesRes.data.dues);
@@ -235,29 +305,50 @@ function User_Dashboard() {
   };
 
   const duesStyle = getDuesCardStyle();
+  const displayAmount = !dues || dues.status === "Paid" ? 0 : dues.amount || 0;
 
   const actions = [
     {
       title: "Voting System",
       description: "Participate in decisions",
+      intro:
+        "View active polls and vote on society decisions. Your choice is final.",
       icon: <Vote />,
       path: "/dashboard/voting",
     },
     {
       title: "Book Amenity",
       description: "Reserve facilities",
+      intro:
+        "Book society amenities like clubhouse and tennis court for your preferred time.",
       icon: <Calendar />,
       path: "/dashboard/booking",
     },
     {
       title: "My Bookings",
       description: "Track reservations",
+      intro: "See your upcoming and past amenity reservations in one place.",
       icon: <CalendarCheck />,
       path: "/dashboard/my-bookings",
     },
     {
+      title: "Guest Request",
+      description: "Request a guest pass",
+      intro: "Generate a guest pass for visitors to your flat.",
+      icon: <Key />,
+      path: "/dashboard/request-guest-pass",
+    },
+    {
+      title: "My Guest Passes",
+      description: "View and manage passes",
+      intro: "See all your guest pass requests and their status.",
+      icon: <Ticket />,
+      path: "/dashboard/my-guest-passes",
+    },
+    {
       title: "Marketplace",
       description: "Buy & sell community items",
+      intro: "Browse listings from residents or post your own items for sale.",
       icon: <ShoppingCart />,
       path: "/dashboard/marketplace",
       // Bento span example: make this card wider if desired, but keeping grid uniform for now
@@ -265,24 +356,36 @@ function User_Dashboard() {
     {
       title: "My Listings",
       description: "Manage your sales",
+      intro:
+        "Review, update or remove the items you’ve listed in the marketplace.",
       icon: <List />,
       path: "/dashboard/my-listings",
     },
     {
+      title: "Society Community",
+      description: "Resident contacts",
+      intro: "Find contact details of fellow residents for quick coordination.",
+      icon: <Users />,
+      path: "/dashboard/community",
+    },
+    {
       title: "Raise Ticket",
       description: "Report an issue",
+      intro: "Raise a maintenance or support ticket to alert the management.",
       icon: <Ticket />,
       path: "/dashboard/tickets/new",
     },
     {
       title: "My Tickets",
       description: "Track support requests",
+      intro: "Follow up on issues you reported and see their current status.",
       icon: <MessageCircle />,
       path: "/dashboard/tickets",
     },
     {
       title: "My Profile",
       description: "Update personal info",
+      intro: "Update your details and phone number used for OTP alerts.",
       icon: <User />,
       path: "/dashboard/profile",
     },
@@ -299,7 +402,6 @@ function User_Dashboard() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
               {userData.name || "User"}
             </span>{" "}
-            👋
           </h1>
           <p className="text-gray-400 text-sm">
             Welcome back to your community dashboard.
@@ -341,7 +443,7 @@ function User_Dashboard() {
               <div className="h-8 w-24 bg-white/10 rounded animate-pulse"></div>
             ) : (
               <p className="text-4xl font-bold tracking-tight">
-                ₹{dues?.amount?.toLocaleString("en-IN") || "0"}
+                ₹{Number(displayAmount).toLocaleString("en-IN")}
               </p>
             )}
             {dues && dues.status !== "Paid" && (

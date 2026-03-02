@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
@@ -9,6 +9,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import api from "../utils/api";
+import { AuthContext } from "../context/AuthContext";
 
 const Login = () => {
   const [userId, setUserId] = useState("");
@@ -18,6 +19,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   // src/LoginSignUp/Login.jsx
 
@@ -46,17 +48,12 @@ const Login = () => {
       const res = await api.post("/api/auth/login", payload);
 
       if (res.status === 200 && res.data.token) {
-        localStorage.setItem("token", res.data.token);
-
-        if (res.data.role === "admin") {
-          localStorage.setItem("admin", JSON.stringify(res.data.user));
-          localStorage.removeItem("user");
-          navigate("/admin", { replace: true });
-        } else {
-          localStorage.setItem("user", JSON.stringify(res.data.user));
-          localStorage.removeItem("admin");
-          navigate("/dashboard", { replace: true });
-        }
+        // Update auth context and storage atomically
+        login(res.data.user, res.data.token, res.data.role);
+        // Navigate based on role
+        navigate(res.data.role === "admin" ? "/admin" : "/dashboard", {
+          replace: true,
+        });
       }
     } catch (err) {
       console.error("Login error:", err);

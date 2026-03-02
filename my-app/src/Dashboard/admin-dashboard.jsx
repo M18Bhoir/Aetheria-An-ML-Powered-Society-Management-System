@@ -12,10 +12,8 @@ import {
   ClipboardEdit,
   Vote,
   FileText,
-  Briefcase,
   BarChart3,
   Ticket,
-  ClockAlert,
 } from "lucide-react";
 
 /* ================= Nav Item Component ================= */
@@ -88,11 +86,6 @@ const Sidebar = () => {
       path: "/admin/expense-logger",
     },
     {
-      name: "Rentals",
-      icon: <Briefcase size={20} />,
-      path: "/admin/manage-rentals",
-    },
-    {
       name: "Analytics",
       icon: <BarChart3 size={20} />,
       path: "/admin/analytics",
@@ -101,16 +94,6 @@ const Sidebar = () => {
       name: "Tickets",
       icon: <Ticket size={20} />,
       path: "/admin/tickets/overview",
-    },
-    {
-      name: "SLA Alerts",
-      icon: <ClockAlert size={20} />,
-      path: "/admin/tickets/sla-alerts",
-    },
-    {
-      name: "Reports",
-      icon: <BarChart3 size={20} />,
-      path: "/admin/tickets/reports",
     },
   ];
 

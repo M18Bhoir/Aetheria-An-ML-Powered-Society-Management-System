@@ -61,14 +61,12 @@ function MarketplaceList() {
             onClick={() => navigate("/dashboard/marketplace/new")}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5 transition-all"
           >
-            <PlusCircle size={20} />
             Sell Item
           </button>
           <button
             onClick={() => navigate("/dashboard/my-listings")}
             className="flex items-center gap-2 px-6 py-3 bg-white/10 border border-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-all"
           >
-            <Tag size={20} />
             My Listings
           </button>
         </div>

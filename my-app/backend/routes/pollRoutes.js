@@ -6,13 +6,11 @@ import adminAuth from "../middleware/adminAuth.js";
 const router = express.Router();
 
 // @route   POST /
-// @desc    Admin creates a poll
-// @access  Private (Admin Only)
-// backend/routes/pollRoutes.js
+// @desc    Create a poll (Admin or Resident)
+// @access  Private (Authenticated)
 router.post("/", protect, async (req, res) => {
-  // Changed adminAuth to protect
   try {
-    const poll = await Poll.create({ ...req.body, createdBy: req.user.id }); // Use req.user.id
+    const poll = await Poll.create({ ...req.body, createdBy: req.user.id });
     res.json(poll);
   } catch (err) {
     res.status(500).json({ msg: "Server error" });
@@ -60,6 +58,8 @@ router.get("/:id", protect, async (req, res) => {
 // ... existing imports
 
 // @route   POST /:pollId/vote
+// @desc    Vote on a poll (Authenticated users)
+// @access  Private (User/Admin)
 router.post("/:pollId/vote", protect, async (req, res) => {
   try {
     const poll = await Poll.findById(req.params.pollId);

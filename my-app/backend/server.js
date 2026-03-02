@@ -28,6 +28,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import adminTicketRoutes from "./routes/adminTicketRoutes.js";
 import pollRoutes from "./routes/pollRoutes.js";
+import expenseRoutes from "./routes/expenseRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import marketplaceRoutes from "./routes/marketplaceRoutes.js";
@@ -82,6 +83,7 @@ app.use("/api/maintenance", protect, maintenanceRoutes);
 app.use("/api/tickets", protect, ticketRoutes);
 app.use("/api/analytics", protect, analyticsRoutes);
 app.use("/api/ml", protect, mlRoutes);
+app.use("/api/expenses", expenseRoutes);
 
 /* ================= MIXED / SPECIAL ROUTES ================= */
 app.use("/api/polls", pollRoutes); // polls may be public

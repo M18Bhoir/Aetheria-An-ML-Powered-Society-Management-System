@@ -7,12 +7,9 @@ import {
   CalendarCheck,
   Bell,
   BarChart,
-  Building,
   Menu,
   X,
   Ticket,
-  ClockAlert,
-  BarChart3,
 } from "lucide-react";
 
 /* ================= Nav Item ================= */
@@ -70,25 +67,11 @@ function AdminSidebar({ isOpen, setIsOpen }) {
       path: "/admin/expense-logger",
     },
     {
-      name: "Rentals",
-      icon: <Building size={20} />,
-      path: "/admin/manage-rentals",
-    },
-    /* 🎫 ADMIN TICKET SYSTEM */
+      /* 🎫 ADMIN TICKET SYSTEM */
     {
       name: "Ticket Overview",
       icon: <Ticket size={20} />,
       path: "/admin/tickets/overview",
-    },
-    {
-      name: "SLA Alerts",
-      icon: <ClockAlert size={20} />,
-      path: "/admin/tickets/sla-alerts",
-    },
-    {
-      name: "Ticket Reports",
-      icon: <BarChart3 size={20} />,
-      path: "/admin/tickets/reports",
     },
   ];
 

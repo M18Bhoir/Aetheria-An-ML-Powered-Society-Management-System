@@ -189,6 +189,20 @@ export default function AdminHome() {
           subColor="bg-green-500/20"
         />
         <StatCard
+          title="Visitors Today"
+          value={dashboardData.visitorsToday || 0}
+          icon={UserPlus}
+          color="text-emerald-500"
+          subColor="bg-emerald-500/20"
+        />
+        <StatCard
+          title="Guest Visitors Today"
+          value={dashboardData.guestVisitorsToday || 0}
+          icon={UserPlus}
+          color="text-cyan-500"
+          subColor="bg-cyan-500/20"
+        />
+        <StatCard
           title="Pending Dues"
           value={`₹${(dashboardData.duesSummary?.pending || 0).toLocaleString()}`}
           icon={DollarSign}

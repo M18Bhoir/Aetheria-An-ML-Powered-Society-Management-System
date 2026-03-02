@@ -42,6 +42,7 @@ import LandingPage from "./LandingPage/LandingPage";
 import Login from "./LoginSignUp/Login";
 import Signup from "./LoginSignUp/SignUp";
 import Profile from "./Profile/Profile";
+import ChangePassword from "./Profile/ChangePassword";
 import { PollList, PollDetail } from "./Voting_System/VotingSystem";
 import AmenityBooking from "./Booking/AmenityBooking";
 import MyBookings from "./Booking/MyBookings";
@@ -63,6 +64,7 @@ import CommunityGallery from "./pages/CommunityGallery";
 import CommitteeMembers from "./pages/CommitteeMembers";
 import SocietyRules from "./pages/SocietyRules";
 import ContactUs from "./pages/ContactUs";
+import ResidentsDirectory from "./Community/ResidentsDirectory";
 
 import "./index.css";
 
@@ -116,10 +118,12 @@ function App() {
             <Route path="/dashboard" element={<UserLayout />}>
               <Route index element={<UserDashboard />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="change-password" element={<ChangePassword />} />
 
               {/* Voting */}
               <Route path="voting" element={<PollList />} />
               <Route path="poll/:id" element={<PollDetail />} />
+              <Route path="create-poll" element={<CreatePoll />} />
 
               {/* Booking */}
               <Route path="booking" element={<AmenityBooking />} />
@@ -152,6 +156,7 @@ function App() {
               <Route path="members" element={<CommitteeMembers />} />
               <Route path="rules" element={<SocietyRules />} />
               <Route path="contact" element={<ContactUs />} />
+              <Route path="community" element={<ResidentsDirectory />} />
             </Route>
           </Route>
 

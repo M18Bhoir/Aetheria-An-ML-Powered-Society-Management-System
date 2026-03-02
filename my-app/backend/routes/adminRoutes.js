@@ -6,8 +6,12 @@ import axios from "axios";
 import Admin from "../models/Admin.js";
 import User from "../models/User.js";
 import Dues from "../models/Dues.js";
-// import Visitor from "../models/Visitor.js"; // 🔁 Uncomment when Visitor model exists
-// import Notice from "../models/Notice.js";   // 🔁 Uncomment when Notice model exists
+import Visitor from "../models/Visitor.js";
+import Notice from "../models/Notice.js";
+import Ticket from "../models/Ticket.js";
+import { generateOtp } from "../utils/generateOtp.js";
+import { sendOtpToResident } from "../utils/sendOtp.js";
+import GuestPass from "../models/GuestPass.js";
 
 import adminAuth from "../middleware/adminAuth.js";
 
@@ -199,23 +203,57 @@ router.patch("/dues/:id/status", adminAuth, async (req, res) => {
    ========================================================= */
 router.get("/dashboard-stats", adminAuth, async (req, res) => {
   try {
-    const [totalResidents, totalTickets, pendingTickets, totalRevenue] =
-      await Promise.all([
-        User.countDocuments({ role: "resident" }),
-        Ticket.countDocuments(),
-        Ticket.countDocuments({ status: "Open" }),
-        Billing.aggregate([
-          { $group: { _id: null, total: { $sum: "$amount" } } },
-        ]),
-      ]);
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const [
+      residentCount,
+      visitorCount,
+      visitorsToday,
+      guestVisitorsToday,
+      noticeCount,
+      pendingDuesAgg,
+    ] = await Promise.all([
+      // Include legacy users without an explicit role as residents
+      User.countDocuments({
+        $or: [
+          { role: "resident" },
+          { role: { $exists: false } },
+          { role: null },
+        ],
+      }),
+      // Active visitors: missing checkOut indicates still inside
+      Visitor.countDocuments({
+        $or: [{ checkOut: { $exists: false } }, { checkOut: null }],
+      }),
+      // Visitors Today based on checkIn date
+      Visitor.countDocuments({ checkIn: { $gte: startOfDay, $lte: endOfDay } }),
+      // Guest visitors today based on approved guest passes for today
+      GuestPass.countDocuments({
+        status: "Approved",
+        visitDate: { $gte: startOfDay, $lte: endOfDay },
+      }),
+      Notice.countDocuments(),
+      Dues.aggregate([
+        { $match: { status: "Pending" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } },
+      ]),
+    ]);
+
+    const pendingTotal = pendingDuesAgg?.[0]?.total || 0;
 
     res.json({
-      totalResidents,
-      totalTickets,
-      pendingTickets,
-      totalRevenue: totalRevenue[0]?.total || 0,
+      visitorsToday,
+      guestVisitorsToday,
+      residentCount,
+      visitorCount,
+      duesSummary: { pending: pendingTotal },
+      noticeCount,
     });
   } catch (err) {
+    console.error("DASHBOARD STATS ERROR:", err);
     res.status(500).json({ error: err.message });
   }
 });

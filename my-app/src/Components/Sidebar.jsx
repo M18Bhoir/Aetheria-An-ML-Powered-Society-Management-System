@@ -14,6 +14,7 @@ import {
   LogOut,
   Ticket,
   MessageCircle,
+  Users,
 } from "lucide-react";
 
 const NavItem = ({ item, isOpen }) => (
@@ -41,6 +42,11 @@ function Sidebar({ isOpen, setIsOpen }) {
   const menu = [
     { name: "Home", icon: <Home size={20} />, path: "/dashboard" },
     { name: "Voting", icon: <Vote size={20} />, path: "/dashboard/voting" },
+    {
+      name: "Community",
+      icon: <Users size={20} />,
+      path: "/dashboard/community",
+    },
     {
       name: "Tickets",
       icon: <Ticket size={20} />,
