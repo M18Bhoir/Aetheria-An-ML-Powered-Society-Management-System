@@ -14,6 +14,12 @@ const client = twilio(
   process.env.TWILIO_AUTH_TOKEN,
 );
 const serviceSid = process.env.TWILIO_SERVICE_SID;
+const haveTwilioVerify = Boolean(
+  process.env.TWILIO_ACCOUNT_SID &&
+  process.env.TWILIO_AUTH_TOKEN &&
+  process.env.TWILIO_SERVICE_SID,
+);
+const isE164 = (num) => /^\+\d{7,15}$/.test(num || "");
 
 // =================================================================
 // ADMIN ROUTES
@@ -26,14 +32,30 @@ const serviceSid = process.env.TWILIO_SERVICE_SID;
  */
 router.post("/:id/request-close", adminAuth, async (req, res) => {
   try {
+    if (!haveTwilioVerify) {
+      return res.status(500).json({
+        msg: "Twilio Verify not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID.",
+      });
+    }
     const ticket = await Ticket.findById(req.params.id).populate("createdBy");
     if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
 
     // Verify resident has a phone number
-    const phoneNumber = ticket.createdBy.phone;
+    const creator = ticket.createdBy;
+    if (!creator) {
+      return res.status(400).json({
+        msg: "Ticket creator not found. The resident may have been deleted.",
+      });
+    }
+    const phoneNumber = creator.phone;
     if (!phoneNumber) {
       return res.status(400).json({
         msg: "Resident does not have a registered phone number. Update their profile first.",
+      });
+    }
+    if (!isE164(phoneNumber)) {
+      return res.status(400).json({
+        msg: "Invalid phone format. Use E.164 (e.g., +919876543210).",
       });
     }
 
@@ -45,9 +67,13 @@ router.post("/:id/request-close", adminAuth, async (req, res) => {
     res.json({ msg: "OTP sent to resident's mobile" });
   } catch (err) {
     console.error("Twilio Send Error:", err);
-    res
-      .status(500)
-      .json({ msg: "Failed to send OTP. Check Twilio configuration." });
+    res.status(500).json({
+      msg:
+        (err?.message &&
+          `Failed to send OTP: ${err.message}. Verify Twilio credentials and phone format.`) ||
+        "Failed to send OTP. Check Twilio configuration.",
+      code: err?.code,
+    });
   }
 });
 
@@ -62,10 +88,26 @@ router.post("/:id/verify-close", adminAuth, async (req, res) => {
   if (!otp) return res.status(400).json({ msg: "OTP code is required" });
 
   try {
+    if (!haveTwilioVerify) {
+      return res.status(500).json({
+        msg: "Twilio Verify not configured. Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID.",
+      });
+    }
     const ticket = await Ticket.findById(req.params.id).populate("createdBy");
     if (!ticket) return res.status(404).json({ msg: "Ticket not found" });
 
-    const phoneNumber = ticket.createdBy.phone;
+    const creator = ticket.createdBy;
+    if (!creator) {
+      return res.status(400).json({
+        msg: "Ticket creator not found. The resident may have been deleted.",
+      });
+    }
+    const phoneNumber = creator.phone;
+    if (!phoneNumber || !isE164(phoneNumber)) {
+      return res.status(400).json({
+        msg: "Resident phone missing or invalid. Use E.164 (e.g., +919876543210).",
+      });
+    }
 
     // Validate the OTP code via Twilio
     const verificationCheck = await client.verify.v2
@@ -83,7 +125,13 @@ router.post("/:id/verify-close", adminAuth, async (req, res) => {
     }
   } catch (err) {
     console.error("Twilio Verify Error:", err);
-    res.status(500).json({ msg: "Verification process failed" });
+    res.status(500).json({
+      msg:
+        (err?.message &&
+          `Verification failed: ${err.message}. Check OTP and Twilio setup.`) ||
+        "Verification process failed",
+      code: err?.code,
+    });
   }
 });
 

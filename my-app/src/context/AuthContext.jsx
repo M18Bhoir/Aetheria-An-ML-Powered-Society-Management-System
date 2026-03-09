@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect } from "react";
-import api from "../utils/api";
 
 export const AuthContext = createContext();
 
@@ -13,13 +12,22 @@ export const AuthProvider = ({ children }) => {
       const storedUser = localStorage.getItem("user");
       const storedAdmin = localStorage.getItem("admin");
 
-      if (token && (storedUser || storedAdmin)) {
-        // Determine which user object to use
-        const userData = storedAdmin
-          ? JSON.parse(storedAdmin)
-          : JSON.parse(storedUser);
-        // Optional: Verify token with backend here if strictly needed
-        setUser({ ...userData, role: storedAdmin ? "admin" : "user" });
+      const parseSafe = (val) => {
+        if (!val || val === "undefined" || val === "null") return null;
+        try {
+          return JSON.parse(val);
+        } catch {
+          return null;
+        }
+      };
+
+      if (token) {
+        const adminData = parseSafe(storedAdmin);
+        const userData = parseSafe(storedUser);
+        const finalData = adminData || userData;
+        if (finalData) {
+          setUser({ ...finalData, role: adminData ? "admin" : "user" });
+        }
       }
       setLoading(false);
     };

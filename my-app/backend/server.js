@@ -19,6 +19,26 @@ console.log(
   "RAZORPAY_KEY_ID =",
   process.env.RAZORPAY_KEY_ID ? "Loaded" : "Not Set",
 );
+console.log(
+  "TWILIO_ACCOUNT_SID =",
+  process.env.TWILIO_ACCOUNT_SID ? "Loaded" : "Not Set",
+);
+console.log(
+  "TWILIO_AUTH_TOKEN =",
+  process.env.TWILIO_AUTH_TOKEN ? "Loaded" : "Not Set",
+);
+console.log(
+  "TWILIO_SERVICE_SID =",
+  process.env.TWILIO_SERVICE_SID ? "Loaded" : "Not Set",
+);
+console.log(
+  "TWILIO_PHONE_NUMBER =",
+  process.env.TWILIO_PHONE_NUMBER ? "Loaded" : "Not Set",
+);
+console.log(
+  "TWILIO_WHATSAPP_NUMBER =",
+  process.env.TWILIO_WHATSAPP_NUMBER ? "Loaded" : "Not Set",
+);
 
 /* ================= DB CONNECTION ================= */
 import connectDB from "./config/db.js";
