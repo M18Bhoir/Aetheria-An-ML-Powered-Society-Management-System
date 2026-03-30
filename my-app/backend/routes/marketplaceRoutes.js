@@ -44,7 +44,10 @@ router.post("/", protect, upload.single("image"), async (req, res) => {
 */
 router.get("/", protect, async (req, res) => {
   try {
-    const items = await MarketplaceItem.find({ status: "Available" })
+    // Return items that are explicitly "Available" OR have no status set (defaulting to Available)
+    const items = await MarketplaceItem.find({
+      status: { $in: ["Available", null, undefined] },
+    })
       .populate("seller", "name userId")
       .sort({ createdAt: -1 });
     res.json(items);
