@@ -7,7 +7,6 @@ import { sendOtpToResident } from "../utils/sendOtp.js";
 const router = express.Router();
 
 /* ================= 📊 TICKET OVERVIEW ================= */
-/* ================= 📊 TICKET OVERVIEW ================= */
 router.get("/tickets/overview", adminAuth, async (req, res) => {
   try {
     // Aggregating counts for all statuses defined in the Ticket model

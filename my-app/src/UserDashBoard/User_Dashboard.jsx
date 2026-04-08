@@ -18,9 +18,12 @@ import {
   Info,
   Users,
   Key,
+  MessageSquare,
+  ShieldCheck,
 } from "lucide-react";
 import { loadScript } from "../utils/loadScript";
 import { useToast } from "../context/ToastContext";
+import SocietyMap from "../Components/SocietyMap";
 
 /* ================= Animation Variants ================= */
 const containerVariants = {
@@ -85,7 +88,9 @@ const DashboardCard = ({
         </div>
         <div>
           <h3 className="text-xl font-bold tracking-tight mb-1.5">{title}</h3>
-          <p className="text-sm text-gray-400 font-medium leading-relaxed">{description}</p>
+          <p className="text-sm text-gray-400 font-medium leading-relaxed">
+            {description}
+          </p>
         </div>
       </div>
 
@@ -136,7 +141,12 @@ const UserNoticeBoard = () => {
 
       {loading && (
         <div className="space-y-4">
-          {[1, 2].map(i => <div key={i} className="h-20 bg-white/5 rounded-2xl animate-pulse"></div>)}
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-20 bg-white/5 rounded-2xl animate-pulse"
+            ></div>
+          ))}
         </div>
       )}
       {!loading && notices.length === 0 && (
@@ -278,23 +288,31 @@ function User_Dashboard() {
                 pdf.setFontSize(10);
                 pdf.setTextColor(100);
                 pdf.text("Official Payment Receipt", 14, 32);
-                
+
                 pdf.setDrawColor(200);
                 pdf.line(14, 38, 196, 38);
-                
+
                 pdf.setFontSize(12);
                 pdf.setTextColor(0);
                 pdf.text(`Resident: ${userData.name || "-"}`, 14, 50);
                 pdf.text(`User ID: ${userData.userId || "-"}`, 14, 58);
-                pdf.text(`Amount: ₹${Number(dues.amount).toLocaleString("en-IN")}`, 14, 66);
+                pdf.text(
+                  `Amount: ₹${Number(dues.amount).toLocaleString("en-IN")}`,
+                  14,
+                  66,
+                );
                 pdf.text(`Order ID: ${response.razorpay_order_id}`, 14, 74);
                 pdf.text(`Payment ID: ${response.razorpay_payment_id}`, 14, 82);
                 pdf.text(`Paid On: ${paidAt.toLocaleString()}`, 14, 90);
-                
+
                 pdf.setFontSize(10);
                 pdf.setTextColor(150);
-                pdf.text("Thank you for your payment. This is a computer generated receipt.", 14, 110);
-                
+                pdf.text(
+                  "Thank you for your payment. This is a computer generated receipt.",
+                  14,
+                  110,
+                );
+
                 pdf.save(`Receipt_${response.razorpay_order_id}.pdf`);
               } catch (e) {
                 console.warn("PDF generation failed:", e);
@@ -357,10 +375,26 @@ function User_Dashboard() {
       path: "/dashboard/request-guest-pass",
     },
     {
-      title: "Community",
-      description: "Residents directory",
       icon: <Users size={24} />,
       path: "/dashboard/community",
+    },
+    {
+      title: "Community Forum",
+      description: "Resident discussions",
+      icon: <MessageSquare size={24} />,
+      path: "/dashboard/forum",
+    },
+    {
+      title: "My Ledger",
+      description: "Financial transactions",
+      icon: <DollarSign size={24} />,
+      path: "/dashboard/ledger",
+    },
+    {
+      title: "Domestic Staff",
+      description: "Manage helper entries",
+      icon: <ShieldCheck size={24} />,
+      path: "/dashboard/staff",
     },
     {
       title: "My Listings",
@@ -387,20 +421,33 @@ function User_Dashboard() {
       <header className="flex flex-col md:flex-row justify-between items-end gap-6 pt-4 px-2">
         <motion.div variants={itemVariants}>
           <h1 className="text-5xl font-extrabold tracking-tight mb-2">
-            Welcome, <span className="text-gradient">{(userData.name || "User").split(' ')[0]}</span>
+            Welcome,{" "}
+            <span className="text-gradient">
+              {(userData.name || "User").split(" ")[0]}
+            </span>
           </h1>
           <p className="text-gray-400 font-medium tracking-wide">
             Your community dashboard highlights and quick actions.
           </p>
         </motion.div>
-        
-        <motion.div variants={itemVariants} className="text-right hidden md:block">
+
+        <motion.div
+          variants={itemVariants}
+          className="text-right hidden md:block"
+        >
           <div className="flex items-center gap-2.5 px-4 py-2 bg-white/5 border border-white/10 rounded-2xl shadow-xl">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Active Resident</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">
+              Active Resident
+            </span>
           </div>
         </motion.div>
       </header>
+
+      {/* Society Map Status */}
+      <motion.section variants={itemVariants} className="px-2">
+        <SocietyMap />
+      </motion.section>
 
       {/* Primary Bento Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -409,24 +456,30 @@ function User_Dashboard() {
           variants={itemVariants}
           onClick={handlePayment}
           className={`p-8 rounded-[32px] glass-card border flex flex-col justify-between relative overflow-hidden group bg-gradient-to-br ${statusInfo.bg} ${statusInfo.glow} shadow-2xl ${
-            dues && dues.status !== "Paid" ? "cursor-pointer active:scale-95" : ""
+            dues && dues.status !== "Paid"
+              ? "cursor-pointer active:scale-95"
+              : ""
           }`}
         >
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700">
             <DollarSign size={120} strokeWidth={1} />
           </div>
-          
+
           <div className="flex justify-between items-start relative z-10">
             <div className="p-4 bg-white/10 rounded-2xl backdrop-blur-md border border-white/10 group-hover:scale-110 transition-transform">
               {statusInfo.icon}
             </div>
-            <span className={`px-4 py-1.5 rounded-full text-[10px] uppercase font-black tracking-[0.2em] border shadow-lg bg-black/20 ${statusInfo.statusColor} ${statusInfo.bg}`}>
+            <span
+              className={`px-4 py-1.5 rounded-full text-[10px] uppercase font-black tracking-[0.2em] border shadow-lg bg-black/20 ${statusInfo.statusColor} ${statusInfo.bg}`}
+            >
               {statusInfo.statusText}
             </span>
           </div>
-          
+
           <div className="mt-12 relative z-10">
-            <p className="text-sm font-bold text-white/60 mb-1.5 tracking-wide uppercase">Maintenance Dues</p>
+            <p className="text-sm font-bold text-white/60 mb-1.5 tracking-wide uppercase">
+              Maintenance Dues
+            </p>
             {isLoading ? (
               <div className="h-12 w-32 bg-white/10 rounded-2xl animate-pulse"></div>
             ) : (
@@ -437,7 +490,10 @@ function User_Dashboard() {
             {dues && dues.status !== "Paid" && (
               <div className="flex items-center gap-2 mt-4 text-xs font-bold text-white/80 group-hover:text-white transition-colors">
                 <span>Complete Payment</span>
-                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                <ArrowRight
+                  size={14}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </div>
             )}
           </div>
@@ -449,7 +505,7 @@ function User_Dashboard() {
           className="p-8 bg-gradient-to-br from-indigo-600/20 to-indigo-900/20 glass-card border border-indigo-500/20 rounded-[32px] flex flex-col justify-between shadow-2xl relative overflow-hidden group"
         >
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 text-indigo-400">
-             <MessageCircle size={120} strokeWidth={1} />
+            <MessageCircle size={120} strokeWidth={1} />
           </div>
 
           <div className="p-4 bg-indigo-500/10 rounded-2xl border border-indigo-500/20 w-fit group-hover:scale-110 transition-transform">
@@ -457,7 +513,9 @@ function User_Dashboard() {
           </div>
 
           <div className="mt-8 relative z-10">
-            <p className="text-sm font-bold text-indigo-300/60 mb-4 tracking-wide uppercase">Your Support Tickets</p>
+            <p className="text-sm font-bold text-indigo-300/60 mb-4 tracking-wide uppercase">
+              Your Support Tickets
+            </p>
             {isLoading ? (
               <div className="flex gap-6 animate-pulse">
                 <div className="h-10 w-12 bg-white/10 rounded-xl"></div>
@@ -469,14 +527,18 @@ function User_Dashboard() {
                   <span className="text-4xl font-black block text-white group-hover/item:text-indigo-400 transition-colors">
                     {ticketSummary.open}
                   </span>
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Open</span>
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                    Open
+                  </span>
                 </div>
                 <div className="w-px bg-white/10 h-10 self-center"></div>
                 <div className="group/item">
                   <span className="text-4xl font-black block text-white group-hover/item:text-indigo-400 transition-colors">
                     {ticketSummary.inProgress}
                   </span>
-                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">In Progress</span>
+                  <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">
+                    In Progress
+                  </span>
                 </div>
               </div>
             )}
@@ -492,10 +554,12 @@ function User_Dashboard() {
       {/* Quick Actions Grid */}
       <section>
         <div className="flex items-center justify-between mb-8 px-2">
-          <h2 className="text-2xl font-black tracking-tight uppercase">Quick Actions</h2>
+          <h2 className="text-2xl font-black tracking-tight uppercase">
+            Quick Actions
+          </h2>
           <div className="h-px flex-1 bg-white/5 mx-6"></div>
         </div>
-        
+
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {quickActions.map((action, idx) => (
             <DashboardCard key={action.title} {...action} />

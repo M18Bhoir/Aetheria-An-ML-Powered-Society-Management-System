@@ -15,6 +15,14 @@ const GuestPassSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  validFrom: {
+    type: Date,
+    required: true
+  },
+  validUntil: {
+    type: Date,
+    required: true
+  },
   reason: {
     type: String,
     trim: true,

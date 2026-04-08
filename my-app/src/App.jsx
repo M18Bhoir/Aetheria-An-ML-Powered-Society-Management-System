@@ -70,6 +70,11 @@ import CommitteeMembers from "./pages/CommitteeMembers";
 import SocietyRules from "./pages/SocietyRules";
 import ContactUs from "./pages/ContactUs";
 const ResidentsDirectory = lazy(() => import("./Community/ResidentsDirectory"));
+import ForumBoard from "./Community/ForumBoard";
+import UserLedger from "./UserDashBoard/UserLedger";
+import StaffManagement from "./UserDashBoard/StaffManagement";
+import NOCDashboard from "./UserDashBoard/NOCDashboard";
+import AdminNOCManager from "./Dashboard/AdminViews/AdminNOCManager";
 
 import "./index.css";
 
@@ -177,6 +182,10 @@ function App() {
                     <Route path="rules" element={<SocietyRules />} />
                     <Route path="contact" element={<ContactUs />} />
                     <Route path="community" element={<ResidentsDirectory />} />
+                    <Route path="forum" element={<ForumBoard />} />
+                    <Route path="ledger" element={<UserLedger />} />
+                    <Route path="staff" element={<StaffManagement />} />
+          <Route path="noc" element={<NOCDashboard />} />
                   </Route>
                 </Route>
 
@@ -201,6 +210,7 @@ function App() {
                       element={<ManageGuestRequests />}
                     />
                     <Route path="maintenance" element={<Maintenance />} />
+            <Route path="noc" element={<AdminNOCManager />} />
                     <Route path="notices" element={<Notices />} />
                     <Route path="manage-rentals" element={<ManageRentals />} />
 

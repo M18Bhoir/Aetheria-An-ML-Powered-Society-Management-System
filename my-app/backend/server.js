@@ -15,30 +15,6 @@ if (!process.env.JWT_SECRET) {
   process.exit(1);
 }
 console.log("✅ JWT_SECRET loaded");
-console.log(
-  "RAZORPAY_KEY_ID =",
-  process.env.RAZORPAY_KEY_ID ? "Loaded" : "Not Set",
-);
-console.log(
-  "TWILIO_ACCOUNT_SID =",
-  process.env.TWILIO_ACCOUNT_SID ? "Loaded" : "Not Set",
-);
-console.log(
-  "TWILIO_AUTH_TOKEN =",
-  process.env.TWILIO_AUTH_TOKEN ? "Loaded" : "Not Set",
-);
-console.log(
-  "TWILIO_SERVICE_SID =",
-  process.env.TWILIO_SERVICE_SID ? "Loaded" : "Not Set",
-);
-console.log(
-  "TWILIO_PHONE_NUMBER =",
-  process.env.TWILIO_PHONE_NUMBER ? "Loaded" : "Not Set",
-);
-console.log(
-  "TWILIO_WHATSAPP_NUMBER =",
-  process.env.TWILIO_WHATSAPP_NUMBER ? "Loaded" : "Not Set",
-);
 
 /* ================= DB CONNECTION ================= */
 import connectDB from "./config/db.js";
@@ -61,6 +37,11 @@ import mlRoutes from "./routes/mlroutes.js";
 import ticketRoutes from "./routes/ticketRoutes.js";
 import analyticsRoutes from "./routes/analytics.js";
 import mlDataRoutes from "./routes/mlData.js";
+import billingRoutes from "./routes/billingRoutes.js";
+import forumRoutes from "./routes/forumRoutes.js";
+import staffRoutes from "./routes/staffRoutes.js";
+import nocRoutes from "./routes/nocRoutes.js";
+import mapRoutes from "./routes/mapRoutes.js";
 
 /* ================= AUTH MIDDLEWARE ================= */
 import protect from "./middleware/auth.js";
@@ -89,7 +70,6 @@ app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 app.use("/api/auth", authRoutes);
 
 /* ================= PROTECTED API ROUTES ================= */
-// 🔒 Everything below REQUIRES authentication
 app.use("/api/admin", protect, adminRoutes);
 app.use("/api/admin", protect, adminTicketRoutes);
 app.use("/api/user", protect, userRoutes);
@@ -103,10 +83,15 @@ app.use("/api/maintenance", protect, maintenanceRoutes);
 app.use("/api/tickets", protect, ticketRoutes);
 app.use("/api/analytics", protect, analyticsRoutes);
 app.use("/api/ml", protect, mlRoutes);
+app.use("/api/billing", protect, billingRoutes);
+app.use("/api/forum", protect, forumRoutes);
+app.use("/api/staff", protect, staffRoutes);
+app.use("/api/noc", protect, nocRoutes);
+app.use("/api/map", protect, mapRoutes);
 app.use("/api/expenses", expenseRoutes);
 
 /* ================= MIXED / SPECIAL ROUTES ================= */
-app.use("/api/polls", pollRoutes); // polls may be public
+app.use("/api/polls", pollRoutes);
 app.use("/api", mlDataRoutes);
 
 /* ================= TEST ROUTE ================= */
@@ -128,10 +113,8 @@ app.get("*", (req, res) => {
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err.stack);
   const statusCode = err.status || err.statusCode || 500;
-
   res.status(statusCode).json({
     message: err.message || "Internal Server Error",
-    stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
   });
 });
 

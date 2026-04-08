@@ -131,6 +131,52 @@ def predict_equipment_failure(data: List[Dict]):
         )
 
 
+# =========================================================
+# 📊 TASK PRIORITIZATION (HEURISTIC-BASED ML SCORING)
+# =========================================================
+@app.post("/predict-priority")
+def predict_priority(tasks: List[Dict]):
+    """
+    Calculates a priority score (0-100) for tasks based on:
+    - Urgency (User provided)
+    - Category Weight
+    - Time Since Creation
+    """
+    weights = {
+        "Plumbing": 1.5,
+        "Electrical": 1.4,
+        "Security": 1.6,
+        "Cleanliness": 1.0,
+        "Common Area": 1.2,
+        "Other": 1.0
+    }
+
+    results = []
+    for task in tasks:
+        urgency = float(task.get("urgency", 1)) # 1 to 5
+        category = task.get("category", "Other")
+        days_open = float(task.get("days_open", 0))
+
+        cat_weight = weights.get(category, 1.0)
+        
+        # Base Score: Urgency * Category Weight
+        # Multiplier for aging tasks
+        age_factor = 1 + (days_open / 10) # 10% increase every 10 days
+        
+        priority_score = (urgency * 15) * cat_weight * age_factor
+        priority_score = min(100, max(0, priority_score))
+
+        results.append({
+            "id": task.get("id"),
+            "priority_score": round(priority_score, 2),
+            "label": "High" if priority_score > 75 else "Medium" if priority_score > 40 else "Low"
+        })
+
+    # Sort by priority score descending
+    results.sort(key=lambda x: x["priority_score"], reverse=True)
+    return results
+
+
 
 # =========================================================
 # 🚀 RUN SERVER

@@ -19,6 +19,17 @@ const MaintenanceSchema = new mongoose.Schema({
     enum: ['Pending', 'In Progress', 'Completed'],
     default: 'Pending',
   },
+  category: {
+    type: String,
+    enum: ["Plumbing", "Electrical", "Security", "Cleanliness", "Common Area", "Other"],
+    default: "Other"
+  },
+  urgency: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: 3
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Admin',

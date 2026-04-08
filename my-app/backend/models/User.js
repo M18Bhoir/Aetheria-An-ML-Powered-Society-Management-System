@@ -24,6 +24,15 @@ const userSchema = new mongoose.Schema(
       unique: true,
       default: "", // Stores +918652718080
     },
+    wing: {
+      type: String,
+      enum: ["A", "B", "C", "D"], // Building sections
+      default: "A"
+    },
+    flat: {
+      type: String,
+      default: "101"
+    },
     role: { type: String, enum: ["resident", "admin"], default: "resident" },
     password: {
       type: String,

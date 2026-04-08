@@ -10,6 +10,7 @@ import {
   Menu,
   X,
   Ticket,
+  FileText,
 } from "lucide-react";
 
 /* ================= Nav Item ================= */
@@ -67,11 +68,14 @@ function AdminSidebar({ isOpen, setIsOpen }) {
       path: "/admin/expense-logger",
     },
     {
-      /* 🎫 ADMIN TICKET SYSTEM */
-    {
       name: "Ticket Overview",
       icon: <Ticket size={20} />,
       path: "/admin/tickets/overview",
+    },
+    {
+      name: "NOC Requests",
+      icon: <FileText size={20} />,
+      path: "/admin/noc",
     },
   ];
 
@@ -86,7 +90,7 @@ function AdminSidebar({ isOpen, setIsOpen }) {
       <div className="flex items-center justify-between p-6 h-20 border-b border-white/10">
         {isOpen && (
           <h1 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 whitespace-nowrap overflow-hidden">
-            Aetheria Admin
+            AETHERIA Admin
           </h1>
         )}
         <button

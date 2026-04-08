@@ -15,6 +15,8 @@ import api from "../../utils/api";
 const AddMaintenanceForm = ({ onTaskAdded }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Other");
+  const [urgency, setUrgency] = useState(3);
   const [scheduledDate, setScheduledDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -22,117 +24,35 @@ const AddMaintenanceForm = ({ onTaskAdded }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage({ type: "", text: "" });
-
     try {
-      const res = await api.post("/api/maintenance", {
-        title,
-        description,
-        scheduledDate,
-      });
+      const res = await api.post("/api/maintenance", { title, description, scheduledDate, category, urgency });
       setMessage({ type: "success", text: "Task added successfully!" });
-      setTitle("");
-      setDescription("");
-      setScheduledDate("");
+      setTitle(""); setDescription(""); setScheduledDate(""); setCategory("Other"); setUrgency(3);
       onTaskAdded(res.data);
     } catch (err) {
-      console.error("Error posting task:", err);
-      setMessage({
-        type: "error",
-        text: err.response?.data?.msg || "Failed to add task.",
-      });
-    } finally {
-      setLoading(false);
-    }
+      setMessage({ type: "error", text: err.response?.data?.msg || "Failed to add task." });
+    } finally { setLoading(false); }
   };
 
   return (
     <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-xl p-6 h-fit">
       <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
-        <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300">
-          <PlusCircle size={20} />
-        </div>
+        <div className="p-2 bg-blue-500/20 rounded-lg text-blue-300"><PlusCircle size={20} /></div>
         <h2 className="text-xl font-bold text-white">Add New Task</h2>
       </div>
-
-      {message.text && (
-        <div
-          className={`flex items-center p-3 rounded-xl mb-6 border text-sm ${
-            message.type === "error"
-              ? "bg-red-500/10 border-red-500/20 text-red-300"
-              : "bg-green-500/10 border-green-500/20 text-green-300"
-          }`}
-        >
-          {message.type === "error" ? (
-            <AlertCircle size={16} className="mr-2" />
-          ) : (
-            <CheckCircle size={16} className="mr-2" />
-          )}
-          {message.text}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="text" placeholder="Task Title" className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white" value={title} onChange={(e)=>setTitle(e.target.value)} required />
+        <select className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white [color-scheme:dark]" value={category} onChange={(e)=>setCategory(e.target.value)}>
+          {["Plumbing", "Electrical", "Security", "Cleanliness", "Common Area", "Other"].map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <div className="flex items-center justify-between text-sm text-gray-400 px-1">
+          <span>Urgency: {urgency}/5</span>
+          <input type="range" min="1" max="5" value={urgency} onChange={(e)=>setUrgency(e.target.value)} className="w-2/3 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-500" />
         </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-300 mb-1"
-          >
-            Task Title *
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            placeholder="e.g., Elevator Service (Tower A)"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="scheduledDate"
-            className="block text-sm font-medium text-gray-300 mb-1"
-          >
-            Scheduled Date *
-          </label>
-          <input
-            type="date"
-            id="scheduledDate"
-            value={scheduledDate}
-            onChange={(e) => setScheduledDate(e.target.value)}
-            required
-            className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all [color-scheme:dark]"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-300 mb-1"
-          >
-            Description (Optional)
-          </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows="3"
-            className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
-            placeholder="e.g., Annual servicing for Tower A lift."
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white tracking-wide transition-all duration-300 transform hover:-translate-y-0.5
-            ${
-              loading
-                ? "bg-gray-600 cursor-not-allowed opacity-50"
-                : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 border border-transparent hover:border-blue-400/30"
-            }`}
-        >
-          {loading ? "Adding Task..." : "Add Task"}
+        <input type="date" className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white [color-scheme:dark]" value={scheduledDate} onChange={(e)=>setScheduledDate(e.target.value)} required />
+        <textarea placeholder="Description" rows="2" className="w-full p-3 bg-black/20 border border-white/10 rounded-xl text-white resize-none" value={description} onChange={(e)=>setDescription(e.target.value)} />
+        <button type="submit" disabled={loading} className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl text-white font-bold shadow-xl shadow-blue-500/20">
+          {loading ? "Adding..." : "Add Task"}
         </button>
       </form>
     </div>
@@ -217,6 +137,32 @@ function Maintenance() {
             Plan and track society maintenance activities.
           </p>
         </div>
+        <button
+          onClick={async () => {
+            try {
+              const res = await api.post("/api/ml/predict", {
+                model: "priority",
+                data: tasks.map(t => ({
+                  id: t._id,
+                  category: t.category || "Other",
+                  urgency: t.urgency || 3,
+                  days_open: Math.floor((new Date() - new Date(t.createdAt)) / (1000 * 60 * 60 * 24))
+                }))
+              });
+              // Merge AI scores into tasks
+              const scoredTasks = tasks.map(t => {
+                const score = res.data.find(r => r.id === t._id);
+                return score ? { ...t, aiScore: score.priority_score, aiLabel: score.label } : t;
+              });
+              setTasks(scoredTasks.sort((a,b) => (b.aiScore || 0) - (a.aiScore || 0)));
+            } catch (err) {
+              console.error("AI Prioritization failed", err);
+            }
+          }}
+          className="px-6 py-3 bg-indigo-600/10 text-indigo-400 border border-indigo-500/20 rounded-2xl font-bold hover:bg-indigo-600/20 transition-all flex items-center gap-2"
+        >
+          <AlertCircle size={18} /> Run AI Prioritization
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -258,9 +204,9 @@ function Maintenance() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-white/10 text-gray-400 text-xs uppercase tracking-wider bg-black/20">
+                      <th className="p-4 font-semibold">Priority</th>
                       <th className="p-4 font-semibold">Task</th>
-                      <th className="p-4 font-semibold">Scheduled Date</th>
-                      <th className="p-4 font-semibold">Status</th>
+                      <th className="p-4 font-semibold">Category</th>
                       <th className="p-4 font-semibold text-center">Action</th>
                     </tr>
                   </thead>
@@ -270,25 +216,27 @@ function Maintenance() {
                         key={task._id}
                         className="hover:bg-white/5 transition-colors duration-200 group"
                       >
-                        <td className="p-4 font-medium text-white">
-                          {task.title}
-                          {task.description && (
-                            <p className="text-xs text-gray-500 mt-1 line-clamp-1">
-                              {task.description}
-                            </p>
-                          )}
-                        </td>
-                        <td className="p-4 text-gray-400">
-                          <div className="flex items-center gap-2">
-                            <Clock size={14} className="opacity-50" />
-                            {new Date(task.scheduledDate).toLocaleDateString()}
-                          </div>
+                        <td className="p-4">
+                           {task.aiScore ? (
+                             <div className="space-y-1">
+                               <div className="text-lg font-black text-white">{Math.round(task.aiScore)}</div>
+                               <div className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border w-fit ${
+                                 task.aiLabel === 'High' ? 'text-rose-400 border-rose-500/30 bg-rose-500/10' :
+                                 task.aiLabel === 'Medium' ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' :
+                                 'text-blue-400 border-blue-500/30 bg-blue-500/10'
+                               }`}>{task.aiLabel} Priority</div>
+                             </div>
+                           ) : (
+                             <span className="text-gray-600 text-xs italic">Unranked</span>
+                           )}
                         </td>
                         <td className="p-4">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-bold border ${getStatusStyle(task.status)}`}
-                          >
-                            {task.status}
+                           <div className="font-bold text-white">{task.title}</div>
+                           <div className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">{new Date(task.scheduledDate).toLocaleDateString()}</div>
+                        </td>
+                        <td className="p-4">
+                          <span className="px-2 py-1 rounded-full text-[10px] font-bold border border-white/10 bg-white/5 text-gray-400">
+                             {task.category || 'Other'}
                           </span>
                         </td>
                         <td className="p-4 text-center">
@@ -299,20 +247,14 @@ function Maintenance() {
                               handleStatusChange(task._id, e.target.value)
                             }
                             className={`
-                                        bg-black/40 text-white text-xs p-2 rounded-lg border border-white/20 
+                                        bg-white/5 text-white text-xs p-2 rounded-lg border border-white/10 
                                         outline-none focus:border-blue-500 transition-all cursor-pointer
                                         disabled:opacity-50 disabled:cursor-not-allowed
                                     `}
                           >
-                            <option className="bg-gray-900" value="Pending">
-                              Pending
-                            </option>
-                            <option className="bg-gray-900" value="In Progress">
-                              In Progress
-                            </option>
-                            <option className="bg-gray-900" value="Completed">
-                              Completed
-                            </option>
+                            <option className="bg-gray-900" value="Pending">Pending</option>
+                            <option className="bg-gray-900" value="In Progress">In Progress</option>
+                            <option className="bg-gray-900" value="Completed">Completed</option>
                           </select>
                         </td>
                       </tr>
