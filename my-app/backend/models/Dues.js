@@ -35,16 +35,6 @@ const DuesSchema = new mongoose.Schema({
   notes: {
     type: String,
     trim: true
-  },
-  // Detailed description for ledger
-  description: {
-    type: String,
-    trim: true
-  },
-  // Details for automated billing (e.g. meter readings)
-  billingDetails: {
-    type: Map,
-    of: mongoose.Schema.Types.Mixed
   }
 }, { timestamps: true }); // timestamps adds createdAt and updatedAt
 

@@ -9,15 +9,11 @@ import {
   Brain,
   TrendingUp,
   Activity,
-  Zap,
-  FileText,
-  ArrowRight,
 } from "lucide-react";
 import api from "../utils/api";
 import MaintenanceSchedule from "./AdminViews/MaintenanceSchedule";
 import NoticeBoard from "./AdminViews/NoticeBoard";
 import Chart from "../Components/Charts";
-import SocietyMap from "../Components/SocietyMap";
 
 /* -------------------- Glass Card Components -------------------- */
 
@@ -224,13 +220,8 @@ export default function AdminHome() {
 
       {/* Main Content Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column (Map & Charts) */}
+        {/* Left Column (Charts) */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Society Map Section */}
-          <div className="animate-fade-in-up delay-100">
-            <SocietyMap />
-          </div>
-
           {/* AI Chart Section */}
           <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-6">
@@ -281,52 +272,6 @@ export default function AdminHome() {
               {activities.map((act) => (
                 <ActivityItem key={act.id} activity={act} />
               ))}
-            </div>
-          </div>
-
-          {/* Treasurer Action Center */}
-          <div className="bg-gradient-to-br from-indigo-600/20 to-blue-600/20 backdrop-blur-md border border-indigo-500/20 p-6 rounded-[32px] shadow-xl">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Zap size={20} className="text-yellow-400" />
-              Treasurer Actions
-            </h3>
-            <div className="space-y-4">
-              <button 
-                onClick={async () => {
-                  if(window.confirm("Generate bills for current month?")) {
-                    try {
-                      await api.post("/api/billing/generate-monthly", { 
-                        month: new Date().getMonth() + 1, 
-                        year: new Date().getFullYear() 
-                      });
-                      alert("Bills generated successfully!");
-                    } catch (err) { alert("Generation failed."); }
-                  }
-                }}
-                className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-left flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <Zap size={18} className="text-yellow-400" />
-                  <span className="text-sm font-bold text-white">Automated Billing</span>
-                </div>
-                <ArrowRight size={16} className="text-gray-500 group-hover:translate-x-1 transition-transform" />
-              </button>
-              
-              <button 
-                onClick={async () => {
-                   try {
-                     const res = await api.get("/api/billing/admin-report");
-                     alert(`Collection Summary:\n${JSON.stringify(res.data.summary, null, 2)}`);
-                   } catch (err) { alert("Failed to fetch report."); }
-                }}
-                className="w-full py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-2xl text-left flex items-center justify-between group transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <FileText size={18} className="text-blue-400" />
-                  <span className="text-sm font-bold text-white">Financial Report</span>
-                </div>
-                <ArrowRight size={16} className="text-gray-500 group-hover:translate-x-1 transition-transform" />
-              </button>
             </div>
           </div>
 

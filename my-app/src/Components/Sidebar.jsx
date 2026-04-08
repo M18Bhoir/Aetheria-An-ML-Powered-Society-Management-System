@@ -15,10 +15,6 @@ import {
   Ticket,
   MessageCircle,
   Users,
-  MessageSquare,
-  ShieldCheck,
-  DollarSign,
-  FileText,
 } from "lucide-react";
 
 const NavItem = ({ item, isOpen }) => (
@@ -52,26 +48,6 @@ function Sidebar({ isOpen, setIsOpen }) {
       name: "Community",
       icon: <Users size={20} />,
       path: "/dashboard/community",
-    },
-    {
-      name: "Forum",
-      icon: <MessageSquare size={20} />,
-      path: "/dashboard/forum",
-    },
-    {
-      name: "My Ledger",
-      icon: <DollarSign size={20} />,
-      path: "/dashboard/ledger",
-    },
-    {
-      name: "NOC Requests",
-      icon: <FileText size={20} />,
-      path: "/dashboard/noc",
-    },
-    {
-      name: "Staff",
-      icon: <ShieldCheck size={20} />,
-      path: "/dashboard/staff",
     },
     {
       name: "Book Amenity",

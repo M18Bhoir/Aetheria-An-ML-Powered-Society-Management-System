@@ -14,10 +14,10 @@ const router = express.Router();
 // @desc    User requests a new guest pass
 // @access  Private (User)
 router.post('/request', protect, async (req, res) => {
-  const { guestName, visitDate, validFrom, validUntil, reason } = req.body;
+  const { guestName, visitDate, reason } = req.body;
 
-  if (!guestName || !visitDate || !validFrom || !validUntil) {
-    return res.status(400).json({ msg: 'Guest Name, Visit Date, Arrival Time, and Departure Time are required.' });
+  if (!guestName || !visitDate) {
+    return res.status(400).json({ msg: 'Guest Name and Visit Date are required.' });
   }
 
   try {
@@ -25,8 +25,6 @@ router.post('/request', protect, async (req, res) => {
       requestedBy: req.user.id,
       guestName,
       visitDate: new Date(visitDate),
-      validFrom: new Date(validFrom),
-      validUntil: new Date(validUntil),
       reason,
       status: 'Pending' // Default
     });
@@ -80,48 +78,6 @@ router.patch('/:id/cancel', protect, async (req, res) => {
         res.json(updatedPass);
     } catch (err) {
         console.error('Error cancelling guest pass:', err.message);
-        res.status(500).json({ msg: 'Server error' });
-    }
-});
-
-// @route   PATCH /api/guestpass/:id/extend
-// @desc    User extends the validUntil time of their own guest pass
-// @access  Private (User)
-router.patch('/:id/extend', protect, async (req, res) => {
-    const { newValidUntil } = req.body;
-
-    if (!newValidUntil) {
-        return res.status(400).json({ msg: 'New Departure Time is required.' });
-    }
-
-    try {
-        const pass = await GuestPass.findById(req.params.id);
-        if (!pass) {
-            return res.status(404).json({ msg: 'Guest pass not found' });
-        }
-        // Check if user owns this pass
-        if (pass.requestedBy.toString() !== req.user.id) {
-            return res.status(401).json({ msg: 'Not authorized' });
-        }
-        
-        // Ensure the new time is in the future and after the current departure time
-        const newExpiry = new Date(newValidUntil);
-        if (newExpiry <= new Date()) {
-            return res.status(400).json({ msg: 'New Departure Time must be in the future.' });
-        }
-        if (newExpiry <= pass.validUntil) {
-            return res.status(400).json({ msg: 'New Departure Time must be after the current one.' });
-        }
-
-        pass.validUntil = newExpiry;
-        await pass.save();
-        
-        const updatedPass = await GuestPass.findById(pass._id)
-            .populate('requestedBy', 'name userId')
-            .populate('handledBy', 'adminId');
-        res.json(updatedPass);
-    } catch (err) {
-        console.error('Error extending guest pass:', err.message);
         res.status(500).json({ msg: 'Server error' });
     }
 });
