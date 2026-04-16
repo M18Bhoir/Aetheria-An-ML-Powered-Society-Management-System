@@ -45,6 +45,12 @@ const getMaintenanceHistory = async () => {
         },
       },
     },
+    {
+      // Final sanity check: remove points with null/non-numeric y
+      $match: {
+        y: { $ne: null, $type: "number" }
+      }
+    },
     { $sort: { ds: 1 } },
   ]);
 };
@@ -77,8 +83,9 @@ router.get("/maintenance-prediction", async (req, res) => {
       predicted: prediction.data,
     });
   } catch (error) {
-    console.error("Prophet prediction error:", error.message);
-    res.status(500).json({ message: "Maintenance prediction failed" });
+    const detail = error.response?.data?.detail || error.message;
+    console.error("Prophet prediction error:", detail);
+    res.status(500).json({ message: "Maintenance prediction failed", detail });
   }
 });
 
@@ -162,13 +169,14 @@ router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
     }));
 
     const prediction = await axios.post(
-      "http://localhost:8000/predict-equipment-failure",
+      "http://localhost:8000/predict_equipment_failure",
       formattedData,
     );
 
     res.json(prediction.data);
   } catch (error) {
-    console.error("ML Prediction Error:", error.message);
+    const detail = error.response?.data?.detail || error.message;
+    console.error("ML Prediction Error:", detail);
     // Generic fallback for UI
     res.json([
       { ds: new Date().toISOString(), yhat: 25, failure_risk: false }

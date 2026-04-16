@@ -7,7 +7,10 @@ import {
   ArrowRight,
   AlertCircle,
   Shield,
+  Activity,
+  CheckCircle2,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import api from "../utils/api";
 
 const Signup = () => {
@@ -24,195 +27,164 @@ const Signup = () => {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setMessage(null);
-
     if (password !== confirmPassword) {
       setMessage({ type: "error", text: "Passwords do not match!" });
       return;
     }
-
     setLoading(true);
-
     try {
-      const res = await api.post("/api/auth/signup", {
-        name,
-        email,
-        userId,
-        password,
-      });
-
+      const res = await api.post("/api/auth/signup", { name, email, userId, password });
       if (res.status === 201 || res.status === 200) {
-        setMessage({
-          type: "success",
-          text: "Signup successful! Redirecting to login...",
-        });
+        setMessage({ type: "success", text: "Onboarding complete! Your account is ready." });
         setTimeout(() => navigate("/login"), 1500);
-      } else {
-        setMessage({
-          type: "error",
-          text: res.data.message || res.data.msg || "Signup failed. Try again.",
-        });
       }
     } catch (err) {
       console.error("Signup error:", err);
-      let errorMessage = "Error during sign up. Please try again.";
-      if (err.response) {
-        errorMessage =
-          err.response.data.message ||
-          err.response.data.msg ||
-          "Server error during signup.";
-      } else if (err.request) {
-        errorMessage = "Network error. Could not connect to the server.";
-      }
-      setMessage({ type: "error", text: errorMessage });
+      setMessage({ type: "error", text: err.response?.data?.msg || "Registration failed. Please check your details." });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    // Background handled by index.css body gradient
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 animate-fade-in-up">
-      {/* Glass Card Container */}
-      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
-        {/* Background Glow Effect */}
-        <div className="absolute top-[-50%] left-[-50%] w-full h-full bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-[-50%] right-[-50%] w-full h-full bg-purple-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 relative overflow-hidden bg-[#020617]">
+      {/* Background Decor */}
+      <div className="absolute top-[-10%] right-[-5%] w-[700px] h-[700px] bg-indigo-600/10 rounded-full blur-[180px] -z-10 animate-float"></div>
+      <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] -z-10"></div>
 
-        <div className="text-center mb-8 relative z-10">
-          <h2 className="text-3xl font-extrabold text-white mb-2 tracking-tight">
-            Create Account
-          </h2>
-          <p className="text-gray-400 text-sm">
-            Join the community and manage your society seamlessly.
-          </p>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
+        className="w-full max-w-lg glass-card p-10 relative overflow-hidden shadow-[0_32px_128px_-16px_rgba(0,0,0,0.6)]"
+      >
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full mb-4">
+             <CheckCircle2 size={14} className="text-indigo-400" />
+             <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Resident Onboarding</span>
+          </div>
+          <h2 className="text-4xl font-black text-white mb-2 tracking-tighter uppercase">Join the Society</h2>
+          <p className="text-slate-400 text-sm font-medium italic">Your gateway to a smarter community.</p>
         </div>
 
-        {/* Message Display Area */}
         {message && (
-          <div
-            className={`flex items-center p-3 rounded-xl mb-6 text-sm font-medium border relative z-10 ${
-              message.type === "error"
-                ? "bg-red-500/10 border-red-500/20 text-red-300"
-                : "bg-green-500/10 border-green-500/20 text-green-300"
-            }`}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex items-center p-4 rounded-2xl mb-8 text-xs font-bold border ${
+              message.type === "error" ? "bg-red-500/10 border-red-500/20 text-red-300" : "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
+            } relative z-10`}
           >
-            <AlertCircle size={16} className="mr-2 shrink-0" />
+            <AlertCircle size={14} className="mr-2 shrink-0" />
             {message.text}
-          </div>
+          </motion.div>
         )}
 
-        <form onSubmit={handleSignUp} className="space-y-4 relative z-10">
-          {/* Name Input */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
-              <User size={18} />
+        <form onSubmit={handleSignUp} className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Name</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400">
+                <User size={16} />
+              </div>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/30 transition-all font-medium text-sm shadow-inner"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
           </div>
 
-          {/* Email Input */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
-              <Mail size={18} />
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400">
+                <Mail size={16} />
+              </div>
+              <input
+                type="email"
+                placeholder="john@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/30 transition-all font-medium text-sm shadow-inner"
+              />
             </div>
-            <input
-              type="email"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
           </div>
 
-          {/* User ID Input */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
-              <Shield size={18} />
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Society Identity (User ID)</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400">
+                <Shield size={16} />
+              </div>
+              <input
+                type="text"
+                placeholder="e.g. A-101"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                required
+                className="w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/30 transition-all font-medium text-sm shadow-inner"
+              />
             </div>
-            <input
-              type="text"
-              placeholder="User ID (e.g., A-101)"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              required
-              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
           </div>
 
-          {/* Password Input */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
-              <Lock size={18} />
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Password</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400">
+                <Lock size={16} />
+              </div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength="6"
+                className="w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/30 transition-all font-medium text-sm shadow-inner"
+              />
             </div>
-            <input
-              type="password"
-              placeholder="Password (min 6 chars)"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength="6"
-              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
           </div>
 
-          {/* Confirm Password Input */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
-              <Lock size={18} />
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Verify Password</label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400">
+                <Lock size={16} />
+              </div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength="6"
+                className="w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/30 transition-all font-medium text-sm shadow-inner"
+              />
             </div>
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength="6"
-              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3.5 px-4 rounded-xl shadow-lg text-sm font-bold text-white tracking-wide transition-all duration-300 transform hover:-translate-y-0.5 flex items-center justify-center gap-2 mt-6
-              ${
-                loading
-                  ? "bg-gray-600 cursor-not-allowed opacity-50"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/30 border border-transparent hover:border-blue-400/30"
-              }`}
+            className={`md:col-span-2 w-full py-4 px-4 rounded-2xl shadow-xl text-sm font-black uppercase tracking-widest text-white transition-all transform active:scale-95 flex items-center justify-center gap-3 mt-4
+              ${loading ? "bg-slate-700 cursor-not-allowed opacity-50" : "bg-gradient-to-r from-indigo-600 to-blue-600 hover:shadow-indigo-500/40 border border-white/10"}`}
           >
-            {loading ? (
-              "Creating Account..."
-            ) : (
-              <>
-                Sign Up <ArrowRight size={16} />
-              </>
-            )}
+            {loading ? "Initializing..." : <>Create Account <ArrowRight size={16} /></>}
           </button>
         </form>
 
-        {/* Footer Link */}
-        <div className="mt-8 text-center text-sm text-gray-400 relative z-10">
+        <div className="mt-8 text-center text-sm font-medium text-slate-500 relative z-10">
           <p>
-            Already have an account?{" "}
-            <span
-              onClick={() => navigate("/login")}
-              className="text-blue-400 hover:text-blue-300 cursor-pointer font-semibold transition-colors"
-            >
-              Login here
-            </span>
+            Connected already?{" "}
+            <span onClick={() => navigate("/login")} className="text-indigo-400 hover:text-indigo-300 cursor-pointer font-bold transition-colors">Login to Portal</span>
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

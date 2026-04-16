@@ -64,14 +64,26 @@ router.post("/login", async (req, res) => {
     let payload;
 
     if (role === "admin") {
-      account = await Admin.findOne({ adminId: identifier });
-      if (!account || !(await account.matchPassword(password))) {
+      // Optimize: use lean() to skip unnecessary fields for faster query
+      account = await Admin.findOne({ adminId: identifier }).select("-__v");
+      if (!account) {
+        return res.status(400).json({ msg: "Invalid credentials" });
+      }
+      // Check password
+      const isMatch = await account.matchPassword(password);
+      if (!isMatch) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
       payload = { admin: { id: account._id } };
     } else {
-      account = await User.findOne({ userId: identifier });
-      if (!account || !(await account.matchPassword(password))) {
+      // Optimize: use lean() for faster query
+      account = await User.findOne({ userId: identifier }).select("-__v");
+      if (!account) {
+        return res.status(400).json({ msg: "Invalid credentials" });
+      }
+      // Check password
+      const isMatch = await account.matchPassword(password);
+      if (!isMatch) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
       payload = { user: { id: account._id } };

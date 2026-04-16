@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      index: true, // Add index for faster queries
     },
     // 📱 Add phone field for Twilio OTP
     phone: {

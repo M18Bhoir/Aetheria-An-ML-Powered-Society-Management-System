@@ -45,23 +45,26 @@ def predict_maintenance(data: List[Dict]):
         model.fit(df)
 
         # Predict next 3 months
-        future = model.make_future_dataframe(periods=3, freq="M")
+        future = model.make_future_dataframe(periods=3, freq="ME")
         forecast = model.predict(future)
 
         result = forecast.tail(3)[["ds", "yhat", "yhat_lower", "yhat_upper"]]
+        result["ds"] = result["ds"].dt.strftime('%Y-%m-%d')
 
         return result.to_dict(orient="records")
 
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
 # =========================================================
 # ⚙️ EQUIPMENT FAILURE PREDICTION (ON-THE-FLY TRAINING)
 # =========================================================
-@app.post("/predict-equipment-failure")
+@app.post("/predict_equipment_failure")
 def predict_equipment_failure(data: List[Dict]):
     import traceback
 
@@ -118,7 +121,8 @@ def predict_equipment_failure(data: List[Dict]):
         forecast["failure_risk"] = forecast["yhat"] > 75
 
         result = forecast[["ds", "yhat", "failure_risk"]].tail(7)
-
+        result["ds"] = result["ds"].dt.strftime('%Y-%m-%d')
+        
         return result.to_dict(orient="records")
 
     except HTTPException:

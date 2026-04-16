@@ -7,29 +7,22 @@ import frontendImage from "../Assets/frontend1.png";
 
 // --- Animations ---
 const fadeIn = (delay = 0) => ({
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 24 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.8, delay },
+    transition: { duration: 0.35, delay },
   },
 });
 
 // --- Reusable Glass Card ---
 const Card = ({ title, description }) => (
-  <motion.div
-    variants={fadeIn(0.2)}
-    initial="hidden"
-    whileInView="show"
-    viewport={{ once: true }}
-    // Glassmorphism Styles
-    className="bg-white/10 dark:bg-black/40 backdrop-blur-md border border-white/20 p-8 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 text-left"
-  >
+  <div className="bg-white/10 dark:bg-black/40 backdrop-blur-md border border-white/20 p-8 rounded-3xl shadow-xl transition-colors duration-200 text-left">
     <h2 className="text-xl font-bold mb-3 text-white">{title}</h2>
     <p className="text-gray-200 dark:text-gray-300 font-light leading-relaxed">
       {description}
     </p>
-  </motion.div>
+  </div>
 );
 
 // --- Header ---
@@ -116,18 +109,12 @@ const Main = () => {
       {/* Challenge Section (Bento Grid) */}
       <section className="py-20 px-8 w-full relative z-10">
         <div className="max-w-7xl mx-auto">
-          <motion.div
-            variants={fadeIn(0.1)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
+          <div className="text-center mb-16">
             <h2 className="text-sm uppercase text-blue-300 font-bold tracking-widest mb-2">
               The Challenge
             </h2>
             <h1 className="text-4xl font-bold text-white">Why Aetheria?</h1>
-          </motion.div>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-8 w-full">
             <Card
@@ -149,40 +136,21 @@ const Main = () => {
       {/* Solution Section */}
       <section className="py-20 px-8 w-full text-center relative z-10">
         <div className="max-w-7xl mx-auto bg-white/5 backdrop-blur-xl border border-white/10 rounded-[3rem] p-8 md:p-16">
-          <motion.h5
-            variants={fadeIn(0.1)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="text-sm uppercase text-blue-300 font-bold tracking-widest mb-2"
-          >
+          <div className="text-sm uppercase text-blue-300 font-bold tracking-widest mb-2">
             Our Solution
-          </motion.h5>
-          <motion.p
-            variants={fadeIn(0.2)}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-extrabold mb-12 text-white"
-          >
+          </div>
+          <p className="text-4xl md:text-5xl font-extrabold mb-12 text-white">
             Aetheria: The All-in-One Solution
-          </motion.p>
+          </p>
 
           <div className="flex flex-col lg:flex-row items-center gap-12">
-            <motion.div
-              variants={fadeIn(0.3)}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              className="w-full lg:w-1/2"
-            >
+            <div className="w-full lg:w-1/2">
               <img
                 src={frontendImage}
                 alt="Aetheria UI"
                 className="rounded-2xl shadow-2xl border border-white/20"
               />
-            </motion.div>
-
+            </div>
             <div className="w-full lg:w-1/2 text-left space-y-8">
               <div className="bg-white/5 p-6 rounded-2xl border border-white/10">
                 <h3 className="text-xl font-bold text-white mb-2">
