@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import UserHero from "./UserHero";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
@@ -140,7 +141,7 @@ const UserNoticeBoard = () => {
         </div>
       )}
       {!loading && notices.length === 0 && (
-        <div className="flex-1 flex items-center justify-center text-gray-500 italic text-sm">
+        <div className="flex-1 flex items-center justify-center text-gray-400 italic text-sm">
           No active notices.
         </div>
       )}
@@ -402,6 +403,9 @@ function User_Dashboard() {
         </motion.div>
       </header>
 
+      {/* New Hero Section */}
+      <UserHero userName={userData.name || "User"} />
+
       {/* Primary Bento Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Maintenance Dues Card */}
@@ -498,7 +502,7 @@ function User_Dashboard() {
         
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {quickActions.map((action, idx) => (
-            <DashboardCard key={action.title} {...action} />
+            <DashboardCard key={action.title} {...action} className="glass-card glass-card-hover" />
           ))}
         </div>
       </section>

@@ -1,9 +1,10 @@
-// LandingPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import building_icon from "../Assets/building.png";
 import frontendImage from "../Assets/frontend1.png";
+import heroImg from "../Assets/hero_community.png";
+import dashboardPreviewImg from "../Assets/dashboard_preview.png";
 
 import { 
   ShieldCheck, 
@@ -13,7 +14,9 @@ import {
   Bell, 
   Smartphone,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 // --- Animations ---
@@ -174,8 +177,8 @@ const Main = () => {
         >
           <div className="absolute inset-0 bg-blue-500/20 blur-[100px] group-hover:bg-blue-500/30 transition-all duration-700"></div>
           <img
-            src="https://images.unsplash.com/photo-1551288049-bbbda546697a?auto=format&fit=crop&q=80&w=2070"
-            alt="Dashboard Analytics"
+            src={heroImg}
+            alt="Aetheria Community Platform"
             className="relative rounded-[2.5rem] border border-white/10 shadow-2xl"
           />
         </motion.div>
@@ -299,6 +302,18 @@ const Main = () => {
         </div>
       </section>
 
+      {/* App Showcase Carousel */}
+      <section className="py-24 px-8 relative z-10 w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto text-center mb-16">
+          <h2 className="text-[10px] uppercase text-blue-400 font-black tracking-[0.4em] mb-4">
+            Visual Tour
+          </h2>
+          <h1 className="text-5xl font-black text-white tracking-tight">Experience Aetheria.</h1>
+        </div>
+        
+        <ImageCarousel />
+      </section>
+
       {/* Solution Section */}
       <section className="py-32 px-8 w-full relative z-10">
         <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[4rem] p-12 md:p-24 relative overflow-hidden group">
@@ -357,9 +372,61 @@ const Main = () => {
   );
 };
 
+// --- Image Carousel ---
+const ImageCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const images = [dashboardPreviewImg, building_icon, frontendImage, heroImg];
+
+  const nextSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
+  };
+
+  return (
+    <div className="relative max-w-5xl mx-auto rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 group bg-black/20 backdrop-blur-sm p-4">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={currentIndex}
+          src={images[currentIndex]}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 1.05 }}
+          transition={{ duration: 0.5 }}
+          className="w-full h-[400px] md:h-[600px] object-cover rounded-[2.5rem]"
+          alt={`Slide ${currentIndex + 1}`}
+        />
+      </AnimatePresence>
+      <button 
+        onClick={prevSlide}
+        className="absolute left-8 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-blue-600 transition-colors opacity-0 group-hover:opacity-100 duration-300"
+      >
+        <ChevronLeft />
+      </button>
+      <button 
+        onClick={nextSlide}
+        className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-blue-600 transition-colors opacity-0 group-hover:opacity-100 duration-300"
+      >
+        <ChevronRight />
+      </button>
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+        {images.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === idx ? "bg-blue-500 scale-125" : "bg-white/50 hover:bg-white"}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 // --- Footer ---
 const Footer = () => (
-  <footer className="bg-black/30 backdrop-blur-md border-t border-white/10 py-8 px-8 text-center text-gray-400">
+  <footer className="bg-black/30 backdrop-blur-md border-t border-white/10 py-8 px-8 text-center text-gray-400 mt-20">
     <p>© {new Date().getFullYear()} Aetheria. All rights reserved.</p>
   </footer>
 );

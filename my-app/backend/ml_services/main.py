@@ -30,7 +30,7 @@ def predict_maintenance(data: List[Dict]):
                 detail="Missing required fields: ds, y"
             )
 
-        df["ds"] = pd.to_datetime(df["ds"], errors="coerce")
+        df["ds"] = pd.to_datetime(df["ds"], errors="coerce").dt.tz_localize(None)
 
         if df["ds"].isnull().any():
             raise HTTPException(status_code=400, detail="Invalid date format in ds")
