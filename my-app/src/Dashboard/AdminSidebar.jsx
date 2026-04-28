@@ -21,10 +21,9 @@ const NavItem = ({ item, isOpen }) => (
       className={({ isActive }) =>
         `flex items-center space-x-3 w-full p-3 rounded-xl transition-all duration-300 mb-1
         ${isOpen ? "px-4" : "justify-center"}
-        ${
-          isActive
-            ? "bg-blue-600/80 shadow-[0_0_15px_rgba(37,99,235,0.5)] text-white border border-blue-400/30"
-            : "text-gray-400 hover:bg-white/10 hover:text-white hover:scale-105"
+        ${isActive
+          ? "bg-blue-600/80 shadow-[0_0_15px_rgba(37,99,235,0.5)] text-white border border-blue-400/30"
+          : "text-gray-400 hover:bg-white/10 hover:text-white hover:scale-105"
         }`
       }
     >
@@ -66,8 +65,7 @@ function AdminSidebar({ isOpen, setIsOpen }) {
       icon: <BarChart size={20} />,
       path: "/admin/expense-logger",
     },
-    {
-      /* 🎫 ADMIN TICKET SYSTEM */
+    /* 🎫 ADMIN TICKET SYSTEM */
     {
       name: "Ticket Overview",
       icon: <Ticket size={20} />,

@@ -429,24 +429,7 @@ function User_Dashboard() {
       variants={containerVariants}
       className="max-w-7xl mx-auto space-y-10 pb-12"
     >
-      {/* Welcome Header */}
-      <header className="flex flex-col md:flex-row justify-between items-end gap-6 pt-4 px-2">
-        <motion.div variants={itemVariants}>
-          <h1 className="text-5xl font-extrabold tracking-tight mb-2">
-            Welcome, <span className="text-gradient">{(userData.name || "User").split(' ')[0]}</span>
-          </h1>
-          <p className="text-gray-400 font-medium tracking-wide">
-            Your community dashboard highlights and quick actions.
-          </p>
-        </motion.div>
-        
-        <motion.div variants={itemVariants} className="text-right hidden md:block">
-          <div className="flex items-center gap-2.5 px-4 py-2 bg-white/5 border border-white/10 rounded-2xl shadow-xl">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-            <span className="text-xs font-bold uppercase tracking-widest text-gray-300">Active Resident</span>
-          </div>
-        </motion.div>
-      </header>
+
 
       {/* New Hero Section */}
       <UserHero userName={userData.name || "User"} />

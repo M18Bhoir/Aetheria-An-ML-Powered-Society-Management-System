@@ -82,8 +82,9 @@ router.get("/maintenance-prediction", async (req, res) => {
     }
 
     // 2. No valid cache, compute from Python ML service
+    const mlBaseUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
     const prediction = await axios.post(
-      "http://localhost:8000/predict-maintenance",
+      `${mlBaseUrl}/predict-maintenance`,
       historyData,
     );
 
@@ -188,8 +189,9 @@ router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
     }
 
     // 2. Fetch fresh prediction
+    const mlBaseUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
     const prediction = await axios.post(
-      "http://localhost:8000/predict-equipment-failure",
+      `${mlBaseUrl}/predict-equipment-failure`,
       formattedData,
     );
 

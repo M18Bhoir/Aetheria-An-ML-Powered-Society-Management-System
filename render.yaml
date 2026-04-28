@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: aetheria-ml-service
+    env: python
+    buildCommand: cd my-app/backend/ml_services && pip install -r requirements.txt
+    startCommand: cd my-app/backend/ml_services && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.13
+
+  - type: web
+    name: aetheria-app
+    env: node
+    buildCommand: cd my-app && npm install && npm run build && cd backend && npm install
+    startCommand: cd my-app/backend && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.10.0
+      - key: ML_SERVICE_URL
+        fromService:
+          type: web
+          name: aetheria-ml-service
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_PHONE_NUMBER
+        sync: false
+      - key: TWILIO_SERVICE_SID
+        sync: false
+      - key: TWILIO_WHATSAPP_NUMBER
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false

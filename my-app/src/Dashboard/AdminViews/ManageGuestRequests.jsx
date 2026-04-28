@@ -149,9 +149,16 @@ function ManageGuestRequests() {
                       </span>
                     </td>
                     <td className="p-4 text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="opacity-50" />
-                        {new Date(pass.visitDate).toLocaleDateString()}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={14} className="opacity-50" />
+                          {new Date(pass.visitDate).toLocaleDateString()}
+                        </div>
+                        {(pass.arrivalTime && pass.departureTime) && (
+                          <div className="text-xs text-blue-400">
+                            {pass.arrivalTime} - {pass.departureTime}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="p-4">

@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import building_icon from "../Assets/building.png";
-import frontendImage from "../Assets/frontend1.png";
-import heroImg from "../Assets/hero_community.png";
-import dashboardPreviewImg from "../Assets/dashboard_preview.png";
 
 import { 
   ShieldCheck, 
@@ -135,9 +131,9 @@ const Main = () => {
           animate="show"
           className="text-6xl md:text-8xl font-black text-white mb-8 tracking-tighter leading-[0.9]"
         >
-          Community Living, <br />
+          Welcome to your <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
-            Reimagined.
+            Better Neighborhood.
           </span>
         </motion.h1>
 
@@ -147,8 +143,8 @@ const Main = () => {
           animate="show"
           className="text-gray-400 leading-relaxed text-lg md:text-xl max-w-2xl mx-auto font-medium mb-12"
         >
-          The intelligent operating system for modern societies. 
-          Streamline operations, automate maintenance, and foster community engagement with AI.
+          We believe community living should be simple, safe, and stress-free. 
+          Aetheria helps you connect with neighbors, manage dues effortlessly, and get help when you need it.
         </motion.p>
 
         <motion.div
@@ -166,21 +162,6 @@ const Main = () => {
           <button className="px-10 py-5 bg-white/5 border border-white/10 text-white font-black text-sm uppercase tracking-widest rounded-3xl hover:bg-white/10 transition-all duration-500">
             Watch Demo
           </button>
-        </motion.div>
-
-        {/* Hero Image / Dashboard Preview */}
-        <motion.div
-          variants={fadeIn(0.6)}
-          initial="hidden"
-          animate="show"
-          className="mt-24 w-full max-w-6xl mx-auto relative group"
-        >
-          <div className="absolute inset-0 bg-blue-500/20 blur-[100px] group-hover:bg-blue-500/30 transition-all duration-700"></div>
-          <img
-            src={heroImg}
-            alt="Aetheria Community Platform"
-            className="relative rounded-[2.5rem] border border-white/10 shadow-2xl"
-          />
         </motion.div>
       </section>
 
@@ -226,18 +207,18 @@ const Main = () => {
 
           <div className="grid md:grid-cols-3 gap-8 w-full">
             <Card
-              title="Manual Overhead"
-              description="Traditional society management relies on manual processes, leading to frequent errors and significant administrative burden."
+              title="Paperwork Headaches"
+              description="Tired of tracking down receipts and keeping ledgers? We automate the boring stuff so you don't have to."
               delay={0.1}
             />
             <Card
-              title="Communication Gaps"
-              description="Fragmented communication leads to distrust and breakdowns between management committees and residents."
+              title="Missed Updates"
+              description="No more scrolling through endless WhatsApp groups to find out when the water will be back on."
               delay={0.2}
             />
             <Card
-              title="Zero Insights"
-              description="Without data, management makes blind decisions about maintenance, expenses, and community well-being."
+              title="Maintenance Delays"
+              description="Reporting a broken elevator shouldn't feel like sending a message in a bottle. Get instant tracking on all your requests."
               delay={0.3}
             />
           </div>
@@ -264,107 +245,70 @@ const Main = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             <FeatureItem 
               icon={ShieldCheck}
-              title="Security Management"
-              description="Digital gatekeeper with visitor management, guest passes, and real-time alerts."
+              title="Peace of Mind"
+              description="Know exactly who is at the gate before they even ring your doorbell with our digital guest passes."
               delay={0.1}
             />
             <FeatureItem 
               icon={BarChart3}
-              title="Financial Analytics"
-              description="Automated billing, dues tracking, and transparent expense reporting with AI forecasting."
+              title="Clear Finances"
+              description="Easily view your maintenance dues, pay online in seconds, and see exactly where the community funds go."
               delay={0.2}
             />
             <FeatureItem 
               icon={Zap}
-              title="Smart Maintenance"
-              description="AI-powered failure prediction and automated service ticket management."
+              title="Quick Fixes"
+              description="Report an issue directly from your phone and our system will notify the right technician instantly."
               delay={0.3}
             />
             <FeatureItem 
               icon={Users}
-              title="Community Hub"
-              description="Voting polls, amenity booking, and marketplace for resident engagement."
+              title="Say Hello"
+              description="Connect with neighbors, buy/sell items in the marketplace, and vote on community decisions."
               delay={0.4}
             />
             <FeatureItem 
               icon={Bell}
-              title="Instant Notices"
-              description="Broadcast important announcements via push notifications and WhatsApp."
+              title="Stay in the Loop"
+              description="Get polite, timely notifications about important community events right to your pocket."
               delay={0.5}
             />
             <FeatureItem 
               icon={Smartphone}
-              title="Resident App"
-              description="A dedicated portal for residents to manage everything from their fingertips."
+              title="Everything in One Place"
+              description="Your entire neighborhood, neatly organized into one friendly, easy-to-use app."
               delay={0.6}
             />
           </div>
         </div>
       </section>
 
-      {/* App Showcase Carousel */}
-      <section className="py-24 px-8 relative z-10 w-full overflow-hidden">
-        <div className="max-w-7xl mx-auto text-center mb-16">
-          <h2 className="text-[10px] uppercase text-blue-400 font-black tracking-[0.4em] mb-4">
-            Visual Tour
-          </h2>
-          <h1 className="text-5xl font-black text-white tracking-tight">Experience Aetheria.</h1>
-        </div>
-        
-        <ImageCarousel />
-      </section>
 
       {/* Solution Section */}
       <section className="py-32 px-8 w-full relative z-10">
         <div className="max-w-7xl mx-auto bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[4rem] p-12 md:p-24 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 group-hover:bg-white/20 transition-all duration-700"></div>
           
-          <div className="relative z-10 flex flex-col lg:flex-row items-center gap-20">
-            <div className="w-full lg:w-1/2 text-left">
-              <h5 className="text-[10px] uppercase text-blue-200 font-black tracking-[0.4em] mb-6">
-                Our Solution
-              </h5>
-              <h2 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tighter leading-none">
-                The All-in-One Community OS.
-              </h2>
-              <p className="text-blue-100/80 text-lg mb-12 font-medium leading-relaxed">
-                Aetheria combines powerful administrative tools with an intuitive resident experience 
-                to create harmonious, modern living environments.
-              </p>
-              
-              <div className="space-y-6">
-                {[
-                  "Real-time data synchronization",
-                  "AI-driven predictive maintenance",
-                  "Secure digital payments",
-                  "Encrypted resident data"
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 text-white font-bold">
-                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                      <CheckCircle2 size={14} />
-                    </div>
-                    {item}
-                  </div>
-                ))}
-              </div>
+          <div className="relative z-10 flex flex-col items-center text-center max-w-3xl mx-auto">
+            <h5 className="text-[10px] uppercase text-blue-200 font-black tracking-[0.4em] mb-6">
+              Our Promise
+            </h5>
+            <h2 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tighter leading-none">
+              A happier place to call home.
+            </h2>
+            <p className="text-blue-100/80 text-lg mb-12 font-medium leading-relaxed">
+              We're building more than just an app. We're building stronger, friendlier, 
+              and more connected communities where everyone feels like they belong.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center w-full">
+              <button 
+                onClick={() => navigate("/signup")}
+                className="px-10 py-5 bg-white text-blue-600 font-black text-sm uppercase tracking-widest rounded-3xl hover:scale-105 transition-all duration-300"
+              >
+                Join Aetheria Today
+              </button>
             </div>
-
-            <motion.div
-              variants={fadeIn(0.3, "left")}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true }}
-              className="w-full lg:w-1/2"
-            >
-              <div className="relative">
-                <div className="absolute inset-0 bg-black/20 blur-[60px] rounded-full"></div>
-                <img
-                  src="https://images.unsplash.com/photo-1460472178825-e5240623abe5?auto=format&fit=crop&q=80&w=2070"
-                  alt="Modern Architecture"
-                  className="relative rounded-[3rem] shadow-2xl border border-white/20 rotate-2 group-hover:rotate-0 transition-transform duration-700"
-                />
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>
@@ -372,57 +316,6 @@ const Main = () => {
   );
 };
 
-// --- Image Carousel ---
-const ImageCarousel = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const images = [dashboardPreviewImg, building_icon, frontendImage, heroImg];
-
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1));
-  };
-
-  return (
-    <div className="relative max-w-5xl mx-auto rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 group bg-black/20 backdrop-blur-sm p-4">
-      <AnimatePresence mode="wait">
-        <motion.img
-          key={currentIndex}
-          src={images[currentIndex]}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
-          transition={{ duration: 0.5 }}
-          className="w-full h-[400px] md:h-[600px] object-cover rounded-[2.5rem]"
-          alt={`Slide ${currentIndex + 1}`}
-        />
-      </AnimatePresence>
-      <button 
-        onClick={prevSlide}
-        className="absolute left-8 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-blue-600 transition-colors opacity-0 group-hover:opacity-100 duration-300"
-      >
-        <ChevronLeft />
-      </button>
-      <button 
-        onClick={nextSlide}
-        className="absolute right-8 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-md hover:bg-blue-600 transition-colors opacity-0 group-hover:opacity-100 duration-300"
-      >
-        <ChevronRight />
-      </button>
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-        {images.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${currentIndex === idx ? "bg-blue-500 scale-125" : "bg-white/50 hover:bg-white"}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // --- Footer ---
 const Footer = () => (

@@ -10,7 +10,8 @@ import {
     CheckCircle2, 
     AlertCircle,
     ChevronRight,
-    MapPin
+    MapPin,
+    ArrowRight
 } from 'lucide-react';
 
 /* ================= Animation Variants ================= */

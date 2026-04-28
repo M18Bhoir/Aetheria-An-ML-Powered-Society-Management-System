@@ -1,5 +1,4 @@
 import React from 'react';
-import heroImg from '../Assets/hero_community.png';
 
 // Hero section for resident dashboard
 export default function UserHero({ userName }) {
@@ -17,7 +16,6 @@ export default function UserHero({ userName }) {
             Explore your community, manage dues, book amenities, and stay updated with the latest notices.
           </p>
         </div>
-        <img src={heroImg} alt="Community" className="w-64 md:w-80 rounded-2xl mt-6 md:mt-0 mx-auto md:ml-8 shadow-2xl" />
       </div>
     </section>
   );
