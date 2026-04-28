@@ -7,24 +7,25 @@ const router = express.Router();
 
 /* ================= SIGNUP ================= */
 router.post("/signup", async (req, res) => {
-  const { name, email, userId, password } = req.body;
+  const { name, email, phone, userId, password } = req.body;
 
   try {
-    if (!name || !email || !userId || !password) {
+    if (!name || !email || !phone || !userId || !password) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
     const userExists = await User.findOne({
-      $or: [{ userId }, { email }],
+      $or: [{ userId }, { email }, { phone }],
     });
 
     if (userExists) {
-      return res.status(400).json({ msg: "User already exists" });
+      return res.status(400).json({ msg: "User with this ID, Email or Phone already exists" });
     }
 
     const user = await User.create({
       name,
       email,
+      phone,
       userId,
       password,
     });

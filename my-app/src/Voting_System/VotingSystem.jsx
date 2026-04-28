@@ -44,7 +44,8 @@ export function PollList() {
     setError(null);
     try {
       const res = await api.get(`/api/polls`);
-      setPolls(res.data);
+      // Backend returns { polls: [], pagination: {} }
+      setPolls(res.data.polls || []);
     } catch (err) {
       console.error("Failed to fetch polls:", err);
       if (err.message !== "Unauthorized access - Redirecting to login.") {
