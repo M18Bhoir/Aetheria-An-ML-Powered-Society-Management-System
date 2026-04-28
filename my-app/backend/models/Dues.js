@@ -40,6 +40,7 @@ const DuesSchema = new mongoose.Schema({
 
 // Add an index to quickly find all dues for a specific user
 DuesSchema.index({ user: 1, status: 1 });
+DuesSchema.index({ status: 1, amount: 1 });
 
 const Dues = mongoose.model('Dues', DuesSchema);
 export default Dues;

@@ -14,4 +14,6 @@ const visitorSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+visitorSchema.index({ checkIn: 1, checkOut: 1 });
+
 export default mongoose.model("Visitor", visitorSchema);

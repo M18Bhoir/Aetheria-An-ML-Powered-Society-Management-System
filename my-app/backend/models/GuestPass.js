@@ -15,6 +15,16 @@ const GuestPassSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
+  arrivalTime: {
+    type: String,
+    trim: true,
+    required: [true, 'Arrival time is required']
+  },
+  departureTime: {
+    type: String,
+    trim: true,
+    required: [true, 'Departure time is required']
+  },
   reason: {
     type: String,
     trim: true,
@@ -37,6 +47,7 @@ const GuestPassSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 GuestPassSchema.index({ requestedBy: 1, status: 1 });
+GuestPassSchema.index({ visitDate: 1, status: 1 });
 
 const GuestPass = mongoose.model('GuestPass', GuestPassSchema);
 export default GuestPass;

@@ -83,6 +83,11 @@ function MyGuestPasses() {
                                     <p className="text-sm text-gray-600 dark:text-gray-300">
                                         For: {new Date(pass.visitDate).toLocaleDateString()}
                                     </p>
+                                    {(pass.arrivalTime && pass.departureTime) && (
+                                        <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mt-1">
+                                            Expected: {pass.arrivalTime} to {pass.departureTime}
+                                        </p>
+                                    )}
                                 </div>
                                 <span className={`text-sm font-medium ${getStatusColor(pass.status)}`}>
                                     Status: {pass.status}

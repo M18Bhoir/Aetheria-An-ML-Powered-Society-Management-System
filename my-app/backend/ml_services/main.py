@@ -45,7 +45,7 @@ def predict_maintenance(data: List[Dict]):
         model.fit(df)
 
         # Predict next 3 months
-        future = model.make_future_dataframe(periods=3, freq="M")
+        future = model.make_future_dataframe(periods=3, freq="ME")
         forecast = model.predict(future)
 
         result = forecast.tail(3)[["ds", "yhat", "yhat_lower", "yhat_upper"]]

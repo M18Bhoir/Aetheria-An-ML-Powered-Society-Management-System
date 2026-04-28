@@ -10,6 +10,15 @@ import mongoose from "mongoose";
 const router = express.Router();
 
 /* =========================================================
+   🚀 ML CACHE MEMORY LAYER (TTL: 24 Hours)
+========================================================= */
+const mlCache = {
+  maintenance: { data: null, timestamp: 0 },
+  equipmentFailure: { data: null, timestamp: 0 }
+};
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+/* =========================================================
    🔁 INTERNAL HELPER - MAINTENANCE HISTORY
 ========================================================= */
 const getMaintenanceHistory = async () => {
@@ -67,15 +76,27 @@ router.get("/maintenance-prediction", async (req, res) => {
        });
     }
 
+    // 1. Check Cache First
+    if (mlCache.maintenance.data && (Date.now() - mlCache.maintenance.timestamp) < CACHE_TTL) {
+      return res.json(mlCache.maintenance.data);
+    }
+
+    // 2. No valid cache, compute from Python ML service
     const prediction = await axios.post(
       "http://localhost:8000/predict-maintenance",
       historyData,
     );
 
-    res.json({
+    const responseData = {
       actual: historyData,
       predicted: prediction.data,
-    });
+    };
+
+    // 3. Save to cache
+    mlCache.maintenance.data = responseData;
+    mlCache.maintenance.timestamp = Date.now();
+
+    res.json(responseData);
   } catch (error) {
     console.error("Prophet prediction error:", error.message);
     res.status(500).json({ message: "Maintenance prediction failed" });
@@ -161,10 +182,20 @@ router.get("/equipment-failure-prediction", adminAuth, async (req, res) => {
       equipment_age_days: Number(item.equipment_age_days ?? 100),
     }));
 
+    // 1. Check Cache First
+    if (mlCache.equipmentFailure.data && (Date.now() - mlCache.equipmentFailure.timestamp) < CACHE_TTL) {
+      return res.json(mlCache.equipmentFailure.data);
+    }
+
+    // 2. Fetch fresh prediction
     const prediction = await axios.post(
       "http://localhost:8000/predict-equipment-failure",
       formattedData,
     );
+
+    // 3. Save to cache
+    mlCache.equipmentFailure.data = prediction.data;
+    mlCache.equipmentFailure.timestamp = Date.now();
 
     res.json(prediction.data);
   } catch (error) {

@@ -6,6 +6,8 @@ import { HiOutlineArrowLeft } from 'react-icons/hi';
 function RequestGuestPass() {
     const [guestName, setGuestName] = useState('');
     const [visitDate, setVisitDate] = useState('');
+    const [arrivalTime, setArrivalTime] = useState('');
+    const [departureTime, setDepartureTime] = useState('');
     const [reason, setReason] = useState('');
     
     const [message, setMessage] = useState({ type: '', text: '' });
@@ -21,6 +23,8 @@ function RequestGuestPass() {
             await api.post('/api/guestpass/request', {
                 guestName,
                 visitDate,
+                arrivalTime,
+                departureTime,
                 reason
             });
             setMessage({ type: 'success', text: 'Guest pass request submitted!' });
@@ -66,6 +70,20 @@ function RequestGuestPass() {
                     <input type="date" id="visitDate" value={visitDate} onChange={(e) => setVisitDate(e.target.value)} required
                            min={new Date().toISOString().split('T')[0]} // Prevent past dates
                            className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                </div>
+
+                {/* Time Fields */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="arrivalTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expected Arrival *</label>
+                        <input type="time" id="arrivalTime" value={arrivalTime} onChange={(e) => setArrivalTime(e.target.value)} required
+                               className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    </div>
+                    <div>
+                        <label htmlFor="departureTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Expected Departure *</label>
+                        <input type="time" id="departureTime" value={departureTime} onChange={(e) => setDepartureTime(e.target.value)} required
+                               className="w-full p-3 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+                    </div>
                 </div>
 
                 {/* Reason */}

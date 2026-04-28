@@ -54,6 +54,11 @@ const DashboardCard = ({
   icon,
   path,
   className = "",
+  gradient = "from-white/5 to-white/5",
+  borderColor = "border-white/5",
+  hoverBorder = "group-hover:border-white/20",
+  iconColor = "text-blue-400",
+  iconBg = "bg-white/5",
 }) => {
   const navigate = useNavigate();
   const [showInfo, setShowInfo] = useState(false);
@@ -63,15 +68,15 @@ const DashboardCard = ({
       variants={itemVariants}
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       onClick={() => navigate(path)}
-      className={`group relative p-6 glass-card glass-card-hover text-left text-white cursor-pointer overflow-hidden ${className}`}
+      className={`group relative p-6 glass-card text-left text-white cursor-pointer overflow-hidden bg-gradient-to-br ${gradient} border ${borderColor} ${hoverBorder} transition-all duration-300 shadow-xl ${className}`}
     >
-      <div className="absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 transition-opacity pointer-events-none group-hover:scale-110 transition-transform duration-500">
+      <div className={`absolute top-0 right-0 p-6 opacity-[0.03] group-hover:opacity-10 pointer-events-none group-hover:scale-110 transition-all duration-500 ${iconColor}`}>
         <ArrowRight size={80} strokeWidth={1} />
       </div>
 
       <div className="flex flex-col h-full justify-between relative z-10">
         <div className="flex items-start justify-between gap-3 mb-6">
-          <div className="p-4 bg-white/5 rounded-2xl text-blue-400 border border-white/5 group-hover:bg-blue-500/10 group-hover:border-blue-500/20 transition-all duration-300">
+          <div className={`p-4 ${iconBg} rounded-2xl ${iconColor} border border-white/5 group-hover:scale-110 transition-all duration-300 shadow-inner`}>
             {icon}
           </div>
           <button
@@ -332,48 +337,88 @@ function User_Dashboard() {
       intro: "View active polls and share your voice on community matters.",
       icon: <Vote size={24} />,
       path: "/dashboard/voting",
+      gradient: "from-blue-600/20 to-blue-900/20",
+      borderColor: "border-blue-500/20",
+      hoverBorder: "group-hover:border-blue-500/40",
+      iconColor: "text-blue-400",
+      iconBg: "bg-blue-500/10",
     },
     {
       title: "Book Amenity",
       description: "Reserve clubhouse or courts",
       icon: <Calendar size={24} />,
       path: "/dashboard/booking",
+      gradient: "from-purple-600/20 to-purple-900/20",
+      borderColor: "border-purple-500/20",
+      hoverBorder: "group-hover:border-purple-500/40",
+      iconColor: "text-purple-400",
+      iconBg: "bg-purple-500/10",
     },
     {
       title: "Marketplace",
       description: "Buy & sell within society",
       icon: <ShoppingCart size={24} />,
       path: "/dashboard/marketplace",
+      gradient: "from-emerald-600/20 to-emerald-900/20",
+      borderColor: "border-emerald-500/20",
+      hoverBorder: "group-hover:border-emerald-500/40",
+      iconColor: "text-emerald-400",
+      iconBg: "bg-emerald-500/10",
     },
     {
       title: "Raise Ticket",
       description: "Report maintenance issues",
       icon: <Ticket size={24} />,
       path: "/dashboard/tickets/new",
+      gradient: "from-rose-600/20 to-rose-900/20",
+      borderColor: "border-rose-500/20",
+      hoverBorder: "group-hover:border-rose-500/40",
+      iconColor: "text-rose-400",
+      iconBg: "bg-rose-500/10",
     },
     {
       title: "Guest Pass",
       description: "Generate entry codes",
       icon: <Key size={24} />,
       path: "/dashboard/request-guest-pass",
+      gradient: "from-amber-600/20 to-amber-900/20",
+      borderColor: "border-amber-500/20",
+      hoverBorder: "group-hover:border-amber-500/40",
+      iconColor: "text-amber-400",
+      iconBg: "bg-amber-500/10",
     },
     {
       title: "Community",
       description: "Residents directory",
       icon: <Users size={24} />,
       path: "/dashboard/community",
+      gradient: "from-cyan-600/20 to-cyan-900/20",
+      borderColor: "border-cyan-500/20",
+      hoverBorder: "group-hover:border-cyan-500/40",
+      iconColor: "text-cyan-400",
+      iconBg: "bg-cyan-500/10",
     },
     {
       title: "My Listings",
       description: "Manage your sales",
       icon: <List size={24} />,
       path: "/dashboard/my-listings",
+      gradient: "from-fuchsia-600/20 to-fuchsia-900/20",
+      borderColor: "border-fuchsia-500/20",
+      hoverBorder: "group-hover:border-fuchsia-500/40",
+      iconColor: "text-fuchsia-400",
+      iconBg: "bg-fuchsia-500/10",
     },
     {
       title: "My Profile",
       description: "Update account info",
       icon: <User size={24} />,
       path: "/dashboard/profile",
+      gradient: "from-slate-600/20 to-slate-800/20",
+      borderColor: "border-slate-500/20",
+      hoverBorder: "group-hover:border-slate-500/40",
+      iconColor: "text-slate-300",
+      iconBg: "bg-slate-500/10",
     },
   ];
 
@@ -502,7 +547,7 @@ function User_Dashboard() {
         
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {quickActions.map((action, idx) => (
-            <DashboardCard key={action.title} {...action} className="glass-card glass-card-hover" />
+            <DashboardCard key={action.title} {...action} />
           ))}
         </div>
       </section>

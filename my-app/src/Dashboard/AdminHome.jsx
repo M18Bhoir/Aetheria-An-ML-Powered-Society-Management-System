@@ -93,24 +93,30 @@ export default function AdminHome() {
     { ds: "May", rate: 15 },
     { ds: "Jun", rate: 10 },
   ]);
-  const [loading, setLoading] = useState(true);
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
+  const [isMlLoading, setIsMlLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchStats = async () => {
       try {
-        setLoading(true);
-        // Parallel fetching for speed
-        const [statsRes, mlRes] = await Promise.allSettled([
-          api.get("/api/admin/dashboard-stats"),
+        setIsStatsLoading(true);
+        const statsRes = await api.get("/api/admin/dashboard-stats");
+        setDashboardData(statsRes.data);
+      } catch (error) {
+        console.error("Dashboard Stats Load Error:", error);
+      } finally {
+        setIsStatsLoading(false);
+      }
+    };
+
+    const fetchMlData = async () => {
+      try {
+        setIsMlLoading(true);
+        const [mlRes, failureRes] = await Promise.allSettled([
           api.get("/api/analytics/maintenance-prediction"),
+          api.get("/api/analytics/equipment-failure-prediction"),
         ]);
 
-        // Handle Stats
-        if (statsRes.status === "fulfilled") {
-          setDashboardData(statsRes.value.data);
-        }
-
-        // Handle ML Data (Format it safely)
         if (mlRes.status === "fulfilled" && mlRes.value.data) {
           const { actual = [], predicted = [] } = mlRes.value.data;
           const combinedData = [
@@ -123,17 +129,26 @@ export default function AdminHome() {
           ];
           setMaintenanceData(combinedData);
         }
+
+        if (failureRes.status === "fulfilled" && failureRes.value.data) {
+          const formatted = failureRes.value.data.map(d => ({
+            ds: new Date(d.ds).toISOString().split("T")[0].substring(5), // Just MM-DD for brevity
+            rate: d.yhat
+          }));
+          setFailureData(formatted);
+        }
       } catch (error) {
-        console.error("Dashboard Load Error:", error);
+        console.error("ML Data Load Error:", error);
       } finally {
-        setLoading(false);
+        setIsMlLoading(false);
       }
     };
 
-    fetchAllData();
+    fetchStats();
+    fetchMlData();
   }, []);
 
-  if (loading) {
+  if (isStatsLoading) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
         <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
@@ -250,15 +265,22 @@ export default function AdminHome() {
                 </p>
               </div>
             </div>
-            <div className="h-[300px] w-full">
-              <Chart
-                type="line"
-                data={maintenanceData}
-                dataKey="amount"
-                xAxis="ds"
-                xLabel="Month"
-                yLabel="Amount (₹)"
-              />
+            <div className="h-[300px] w-full flex items-center justify-center">
+              {isMlLoading ? (
+                <div className="flex flex-col items-center text-indigo-400">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500 mb-4"></div>
+                  <span className="text-sm">Running ML Model...</span>
+                </div>
+              ) : (
+                <Chart
+                  type="line"
+                  data={maintenanceData}
+                  dataKey="amount"
+                  xAxis="ds"
+                  xLabel="Month"
+                  yLabel="Amount (₹)"
+                />
+              )}
             </div>
           </div>
 
@@ -275,15 +297,22 @@ export default function AdminHome() {
                 </p>
               </div>
             </div>
-            <div className="h-[300px] w-full">
-              <Chart
-                type="bar"
-                data={failureData}
-                dataKey="rate"
-                xAxis="ds"
-                xLabel="Month"
-                yLabel="Failure Risk (%)"
-              />
+            <div className="h-[300px] w-full flex items-center justify-center">
+              {isMlLoading ? (
+                <div className="flex flex-col items-center text-rose-400">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500 mb-4"></div>
+                  <span className="text-sm">Running ML Model...</span>
+                </div>
+              ) : (
+                <Chart
+                  type="bar"
+                  data={failureData}
+                  dataKey="rate"
+                  xAxis="ds"
+                  xLabel="Month"
+                  yLabel="Failure Risk (%)"
+                />
+              )}
             </div>
           </div>
 

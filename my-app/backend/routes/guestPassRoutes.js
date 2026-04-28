@@ -14,10 +14,10 @@ const router = express.Router();
 // @desc    User requests a new guest pass
 // @access  Private (User)
 router.post('/request', protect, async (req, res) => {
-  const { guestName, visitDate, reason } = req.body;
+  const { guestName, visitDate, arrivalTime, departureTime, reason } = req.body;
 
-  if (!guestName || !visitDate) {
-    return res.status(400).json({ msg: 'Guest Name and Visit Date are required.' });
+  if (!guestName || !visitDate || !arrivalTime || !departureTime) {
+    return res.status(400).json({ msg: 'Guest Name, Visit Date, Arrival Time, and Departure Time are required.' });
   }
 
   try {
@@ -25,6 +25,8 @@ router.post('/request', protect, async (req, res) => {
       requestedBy: req.user.id,
       guestName,
       visitDate: new Date(visitDate),
+      arrivalTime,
+      departureTime,
       reason,
       status: 'Pending' // Default
     });
