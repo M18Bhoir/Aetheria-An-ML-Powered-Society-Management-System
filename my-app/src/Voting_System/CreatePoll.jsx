@@ -45,7 +45,7 @@ export default function CreatePoll() {
         options: options.map((opt) => ({ text: opt })),
       });
       setMessage({ type: "success", text: "Poll created successfully!" });
-      setTimeout(() => navigate("/dashboard/voting"), 500);
+      setTimeout(() => navigate("/dashboard/voting"), 1500);
     } catch (err) {
       console.error(err);
       setMessage({

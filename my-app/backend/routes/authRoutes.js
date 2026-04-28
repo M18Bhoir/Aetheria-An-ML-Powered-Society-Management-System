@@ -7,25 +7,24 @@ const router = express.Router();
 
 /* ================= SIGNUP ================= */
 router.post("/signup", async (req, res) => {
-  const { name, email, phone, userId, password } = req.body;
+  const { name, email, userId, password } = req.body;
 
   try {
-    if (!name || !email || !phone || !userId || !password) {
+    if (!name || !email || !userId || !password) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
     const userExists = await User.findOne({
-      $or: [{ userId }, { email }, { phone }],
+      $or: [{ userId }, { email }],
     });
 
     if (userExists) {
-      return res.status(400).json({ msg: "User with this ID, Email or Phone already exists" });
+      return res.status(400).json({ msg: "User already exists" });
     }
 
     const user = await User.create({
       name,
       email,
-      phone,
       userId,
       password,
     });
@@ -65,26 +64,14 @@ router.post("/login", async (req, res) => {
     let payload;
 
     if (role === "admin") {
-      // Optimize: use lean() to skip unnecessary fields for faster query
-      account = await Admin.findOne({ adminId: identifier }).select("-__v");
-      if (!account) {
-        return res.status(400).json({ msg: "Invalid credentials" });
-      }
-      // Check password
-      const isMatch = await account.matchPassword(password);
-      if (!isMatch) {
+      account = await Admin.findOne({ adminId: identifier });
+      if (!account || !(await account.matchPassword(password))) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
       payload = { admin: { id: account._id } };
     } else {
-      // Optimize: use lean() for faster query
-      account = await User.findOne({ userId: identifier }).select("-__v");
-      if (!account) {
-        return res.status(400).json({ msg: "Invalid credentials" });
-      }
-      // Check password
-      const isMatch = await account.matchPassword(password);
-      if (!isMatch) {
+      account = await User.findOne({ userId: identifier });
+      if (!account || !(await account.matchPassword(password))) {
         return res.status(400).json({ msg: "Invalid credentials" });
       }
       payload = { user: { id: account._id } };

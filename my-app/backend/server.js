@@ -62,13 +62,16 @@ import ticketRoutes from "./routes/ticketRoutes.js";
 import analyticsRoutes from "./routes/analytics.js";
 import mlDataRoutes from "./routes/mlData.js";
 
+/* ================= AUTH MIDDLEWARE ================= */
 import protect from "./middleware/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+/* ================= CONNECT DB ================= */
 connectDB();
 
+/* ================= GLOBAL MIDDLEWARE ================= */
 app.use(
   cors({
     origin: true,

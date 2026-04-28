@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel }) {
+export default function Chart({ data = [], type, dataKey, xAxis }) {
   if (!data.length) {
     return (
       <div className="flex items-center justify-center h-full text-slate-500 italic">
@@ -49,11 +49,11 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
   const predictedData = data.filter((d) => d.type === "predicted");
 
   return (
-    <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+    <ResponsiveContainer width="100%" height="100%" minHeight={250}>
       {type === "line" && (
         <LineChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+          margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
         >
           <CartesianGrid
             strokeDasharray="3 3"
@@ -62,37 +62,17 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
           />
           <XAxis
             dataKey={xAxis}
-            stroke="#94a3b8"
-            fontSize={11}
-            tickLine={true}
-            axisLine={true}
-            dy={10}
-          >
-            {xLabel && (
-              <Label
-                value={xLabel}
-                offset={-20}
-                position="insideBottom"
-                style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-              />
-            )}
-          </XAxis>
+            stroke="#64748b"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+          />
           <YAxis
-            stroke="#94a3b8"
-            fontSize={11}
-            tickLine={true}
-            axisLine={true}
-            dx={-10}
-          >
-            {yLabel && (
-              <Label
-                value={yLabel}
-                angle={-90}
-                position="insideLeft"
-                style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-              />
-            )}
-          </YAxis>
+            stroke="#64748b"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+          />
           <Tooltip content={<CustomTooltip />} />
           {actualData.length > 0 ? (
             <Line
@@ -101,16 +81,16 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
               dataKey={dataKey}
               name="Actual"
               stroke="#3b82f6"
-              strokeWidth={4}
+              strokeWidth={3}
               dot={{ r: 4, fill: "#3b82f6", strokeWidth: 0 }}
-              activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2 }}
+              activeDot={{ r: 6 }}
             />
           ) : (
             <Line
               type="monotone"
               dataKey={dataKey}
               stroke="#3b82f6"
-              strokeWidth={4}
+              strokeWidth={3}
               dot={{ r: 4, fill: "#3b82f6", strokeWidth: 0 }}
             />
           )}
@@ -120,10 +100,10 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
               data={predictedData}
               dataKey={dataKey}
               name="Predicted"
-              stroke="#f43f5e"
-              strokeWidth={3}
-              strokeDasharray="8 5"
-              dot={{ r: 4, fill: "#f43f5e" }}
+              stroke="#ef4444"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={{ r: 4, fill: "#ef4444" }}
             />
           )}
         </LineChart>
@@ -132,7 +112,7 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
       {type === "bar" && (
         <BarChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+          margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
         >
           <CartesianGrid
             strokeDasharray="3 3"
@@ -141,43 +121,23 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
           />
           <XAxis
             dataKey={xAxis}
-            stroke="#94a3b8"
-            fontSize={11}
-            tickLine={true}
-            axisLine={true}
-            dy={10}
-          >
-            {xLabel && (
-              <Label
-                value={xLabel}
-                offset={-20}
-                position="insideBottom"
-                style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-              />
-            )}
-          </XAxis>
+            stroke="#64748b"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+          />
           <YAxis
-            stroke="#94a3b8"
-            fontSize={11}
-            tickLine={true}
-            axisLine={true}
-            dx={-10}
-          >
-            {yLabel && (
-              <Label
-                value={yLabel}
-                angle={-90}
-                position="insideLeft"
-                style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-              />
-            )}
-          </YAxis>
+            stroke="#64748b"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+          />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: "#ffffff05" }} />
           <Bar
             dataKey={dataKey}
             fill="#10b981"
-            radius={[6, 6, 0, 0]}
-            barSize={40}
+            radius={[4, 4, 0, 0]}
+            barSize={30}
           />
         </BarChart>
       )}
@@ -185,11 +145,11 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
       {type === "area" && (
         <AreaChart
           data={data}
-          margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+          margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
         >
           <defs>
             <linearGradient id="colorYhat" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
+              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
               <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
             </linearGradient>
           </defs>
@@ -200,43 +160,23 @@ export default function Chart({ data = [], type, dataKey, xAxis, xLabel, yLabel 
           />
           <XAxis
             dataKey={xAxis}
-            stroke="#94a3b8"
-            fontSize={11}
-            tickLine={true}
-            axisLine={true}
-            dy={10}
-          >
-            {xLabel && (
-              <Label
-                value={xLabel}
-                offset={-20}
-                position="insideBottom"
-                style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-              />
-            )}
-          </XAxis>
+            stroke="#64748b"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+          />
           <YAxis
-            stroke="#94a3b8"
-            fontSize={11}
-            tickLine={true}
-            axisLine={true}
-            dx={-10}
-          >
-            {yLabel && (
-              <Label
-                value={yLabel}
-                angle={-90}
-                position="insideLeft"
-                style={{ fill: '#64748b', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }}
-              />
-            )}
-          </YAxis>
+            stroke="#64748b"
+            fontSize={10}
+            tickLine={false}
+            axisLine={false}
+          />
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
             dataKey={dataKey}
             stroke="#f59e0b"
-            strokeWidth={4}
+            strokeWidth={3}
             fillOpacity={1}
             fill="url(#colorYhat)"
           />

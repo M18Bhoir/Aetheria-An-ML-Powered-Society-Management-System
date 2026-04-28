@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, XCircle, User, Calendar, Key, LogIn, LogOut, Clock } from "lucide-react";
+import { ArrowLeft, Check, XCircle, User, Calendar, Key } from "lucide-react";
 import api from "../../utils/api";
 
 function ManageGuestRequests() {
@@ -51,32 +51,6 @@ function ManageGuestRequests() {
     } catch (err) {
       console.error("Error rejecting pass:", err);
       alert("Failed to reject pass.");
-    } finally {
-      setUpdating(null);
-    }
-  };
-
-  const handleCheckIn = async (passId) => {
-    setUpdating(passId);
-    try {
-      const res = await api.patch(`/api/guestpass/${passId}/checkin`);
-      setPasses(passes.map((p) => (p._id === passId ? res.data : p)));
-    } catch (err) {
-      console.error("Error checking in guest:", err);
-      alert(err.response?.data?.msg || "Failed to check in guest.");
-    } finally {
-      setUpdating(null);
-    }
-  };
-
-  const handleCheckOut = async (passId) => {
-    setUpdating(passId);
-    try {
-      const res = await api.patch(`/api/guestpass/${passId}/checkout`);
-      setPasses(passes.map((p) => (p._id === passId ? res.data : p)));
-    } catch (err) {
-      console.error("Error checking out guest:", err);
-      alert(err.response?.data?.msg || "Failed to check out guest.");
     } finally {
       setUpdating(null);
     }
@@ -151,8 +125,7 @@ function ManageGuestRequests() {
                 <tr className="border-b border-white/10 text-gray-400 text-xs uppercase tracking-wider bg-black/20">
                   <th className="p-4 font-semibold">Guest</th>
                   <th className="p-4 font-semibold">Resident (Flat)</th>
-                  <th className="p-4 font-semibold">Scheduled Visit</th>
-                  <th className="p-4 font-semibold">Actual Times</th>
+                  <th className="p-4 font-semibold">Visit Date</th>
                   <th className="p-4 font-semibold">Status</th>
                   <th className="p-4 font-semibold">Code</th>
                   <th className="p-4 font-semibold text-center">Actions</th>
@@ -176,31 +149,9 @@ function ManageGuestRequests() {
                       </span>
                     </td>
                     <td className="p-4 text-gray-400">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <Calendar size={14} className="opacity-50 text-blue-400" />
-                          {new Date(pass.visitDate).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center gap-2 text-xs opacity-70">
-                          <Clock size={12} />
-                          {pass.arrivalTime} - {pass.departureTime}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-gray-400">
-                      <div className="flex flex-col gap-1 text-[11px]">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-gray-500 uppercase w-10">In:</span>
-                          <span className={pass.checkInTime ? "text-green-400 font-mono" : "text-gray-600 italic"}>
-                            {pass.checkInTime ? new Date(pass.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "---"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-gray-500 uppercase w-10">Out:</span>
-                          <span className={pass.checkOutTime ? "text-rose-400 font-mono" : "text-gray-600 italic"}>
-                            {pass.checkOutTime ? new Date(pass.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "---"}
-                          </span>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar size={14} className="opacity-50" />
+                        {new Date(pass.visitDate).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="p-4">
@@ -214,58 +165,30 @@ function ManageGuestRequests() {
                       {pass.code || "---"}
                     </td>
                     <td className="p-4 text-center">
-                      <div className="flex justify-center space-x-2">
-                        {pass.status === "Pending" && (
-                          <>
-                            <button
-                              onClick={() => handleApprove(pass._id)}
-                              disabled={updating === pass._id}
-                              className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
-                              title="Approve"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleReject(pass._id)}
-                              disabled={updating === pass._id}
-                              className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
-                              title="Reject"
-                            >
-                              <XCircle size={16} />
-                            </button>
-                          </>
-                        )}
-                        
-                        {pass.status === "Approved" && !pass.checkInTime && (
+                      {pass.status === "Pending" ? (
+                        <div className="flex justify-center space-x-2">
                           <button
-                            onClick={() => handleCheckIn(pass._id)}
+                            onClick={() => handleApprove(pass._id)}
                             disabled={updating === pass._id}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all disabled:opacity-50 text-xs font-bold"
-                            title="Check In"
+                            className="p-2 rounded-lg bg-green-500/10 text-green-400 hover:bg-green-500 hover:text-white transition-all disabled:opacity-50"
+                            title="Approve"
                           >
-                            <LogIn size={14} />
-                            Check In
+                            <Check size={16} />
                           </button>
-                        )}
-
-                        {pass.checkInTime && !pass.checkOutTime && (
                           <button
-                            onClick={() => handleCheckOut(pass._id)}
+                            onClick={() => handleReject(pass._id)}
                             disabled={updating === pass._id}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all disabled:opacity-50 text-xs font-bold"
-                            title="Check Out"
+                            className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all disabled:opacity-50"
+                            title="Reject"
                           >
-                            <LogOut size={14} />
-                            Check Out
+                            <XCircle size={16} />
                           </button>
-                        )}
-
-                        {(pass.status === "Rejected" || pass.status === "Cancelled" || pass.status === "Expired" || (pass.checkInTime && pass.checkOutTime)) && (
-                          <span className="text-xs text-gray-500 italic">
-                            Completed
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-gray-500 italic">
+                          No actions
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -13,9 +13,8 @@ router.post("/predict", async (req, res) => {
   }
 
   try {
-    // Use ML_SERVICE_URL environment variable if available, fallback to localhost for development
-    const mlBaseUrl = process.env.ML_SERVICE_URL || "http://localhost:8000";
-    let endpoint = `${mlBaseUrl}/predict-maintenance`;
+    // Route to the appropriate FastAPI endpoint based on model type
+    let endpoint = "http://localhost:8000/predict-maintenance";
 
     // If the system expands to other models, logic can be added here
     const response = await axios.post(endpoint, data);

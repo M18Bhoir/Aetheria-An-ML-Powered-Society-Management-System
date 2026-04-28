@@ -22,27 +22,8 @@ router.post("/", protect, async (req, res) => {
 // @access  Private (User)
 router.get("/", protect, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const total = await Poll.countDocuments();
-    const polls = await Poll.find()
-      .select("-voters")
-      .populate("createdBy", "name userId")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    res.json({
-      polls,
-      pagination: {
-        total,
-        page,
-        limit,
-        hasMore: skip + polls.length < total,
-      },
-    });
+    const polls = await Poll.find().populate("createdBy", "name userId");
+    res.json(polls);
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
@@ -142,27 +123,8 @@ router.delete("/:id", adminAuth, async (req, res) => {
 // @access  Private (Admin Only)
 router.get("/admin/all", adminAuth, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-
-    const total = await Poll.countDocuments();
-    const polls = await Poll.find()
-      .select("-voters")
-      .populate("createdBy", "name userId")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    res.json({
-      polls,
-      pagination: {
-        total,
-        page,
-        limit,
-        hasMore: skip + polls.length < total,
-      },
-    });
+    const polls = await Poll.find().populate("createdBy", "name userId");
+    res.json(polls);
   } catch (err) {
     console.error("Error fetching polls for admin:", err.message);
     res.status(500).json({ msg: "Server error" });
