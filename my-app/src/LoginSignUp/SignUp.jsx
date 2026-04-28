@@ -7,6 +7,7 @@ import {
   ArrowRight,
   AlertCircle,
   Shield,
+  Phone,
 } from "lucide-react";
 import api from "../utils/api";
 
@@ -14,6 +15,7 @@ const Signup = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState(null);
@@ -37,6 +39,7 @@ const Signup = () => {
         name,
         email,
         userId,
+        phone,
         password,
       });
 
@@ -142,6 +145,21 @@ const Signup = () => {
               placeholder="User ID (e.g., A-101)"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
+              required
+              className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+            />
+          </div>
+
+          {/* Phone Input */}
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-400 transition-colors">
+              <Phone size={18} />
+            </div>
+            <input
+              type="tel"
+              placeholder="Phone Number (e.g., +91...)"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required
               className="w-full pl-11 pr-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
             />

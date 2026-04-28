@@ -7,15 +7,15 @@ const router = express.Router();
 
 /* ================= SIGNUP ================= */
 router.post("/signup", async (req, res) => {
-  const { name, email, userId, password } = req.body;
+  const { name, email, userId, phone, password } = req.body;
 
   try {
-    if (!name || !email || !userId || !password) {
+    if (!name || !email || !userId || !phone || !password) {
       return res.status(400).json({ msg: "All fields are required" });
     }
 
     const userExists = await User.findOne({
-      $or: [{ userId }, { email }],
+      $or: [{ userId }, { email }, { phone }],
     });
 
     if (userExists) {
@@ -26,6 +26,7 @@ router.post("/signup", async (req, res) => {
       name,
       email,
       userId,
+      phone,
       password,
     });
 

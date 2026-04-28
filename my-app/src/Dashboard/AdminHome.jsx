@@ -77,7 +77,22 @@ export default function AdminHome() {
     duesSummary: { pending: 0 },
     noticeCount: 0,
   });
-  const [maintenanceData, setMaintenanceData] = useState([]);
+  const [maintenanceData, setMaintenanceData] = useState([
+    { ds: "2026-01", amount: 4500 },
+    { ds: "2026-02", amount: 5200 },
+    { ds: "2026-03", amount: 4800 },
+    { ds: "2026-04", amount: 6100 },
+    { ds: "2026-05", amount: 5500 },
+    { ds: "2026-06", amount: 7000 },
+  ]);
+  const [failureData, setFailureData] = useState([
+    { ds: "Jan", rate: 5 },
+    { ds: "Feb", rate: 8 },
+    { ds: "Mar", rate: 12 },
+    { ds: "Apr", rate: 7 },
+    { ds: "May", rate: 15 },
+    { ds: "Jun", rate: 10 },
+  ]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -222,7 +237,7 @@ export default function AdminHome() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column (Charts) */}
         <div className="lg:col-span-2 space-y-8">
-          {/* AI Chart Section */}
+          {/* AI Chart Section - Maintenance */}
           <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg">
             <div className="flex justify-between items-center mb-6">
               <div>
@@ -231,26 +246,44 @@ export default function AdminHome() {
                   Maintenance Forecast
                 </h3>
                 <p className="text-sm text-gray-400">
-                  AI-predicted expenses vs actuals
+                  Predicted monthly maintenance expenses (Static)
                 </p>
               </div>
-              <button className="text-xs bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full text-white transition">
-                View Report
-              </button>
             </div>
-            <div className="h-[350px] w-full">
-              {maintenanceData.length > 0 ? (
-                <Chart
-                  type="line"
-                  data={maintenanceData}
-                  dataKey="amount"
-                  xAxis="ds"
-                />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500 italic">
-                  No prediction data available yet.
-                </div>
-              )}
+            <div className="h-[300px] w-full">
+              <Chart
+                type="line"
+                data={maintenanceData}
+                dataKey="amount"
+                xAxis="ds"
+                xLabel="Month"
+                yLabel="Amount (₹)"
+              />
+            </div>
+          </div>
+
+          {/* AI Chart Section - Equipment Failure */}
+          <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-lg">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <Activity size={20} className="text-rose-400" />
+                  Equipment Failure Prediction
+                </h3>
+                <p className="text-sm text-gray-400">
+                  Predicted probability of critical failure (%)
+                </p>
+              </div>
+            </div>
+            <div className="h-[300px] w-full">
+              <Chart
+                type="bar"
+                data={failureData}
+                dataKey="rate"
+                xAxis="ds"
+                xLabel="Month"
+                yLabel="Failure Risk (%)"
+              />
             </div>
           </div>
 
