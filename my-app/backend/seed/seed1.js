@@ -1,6 +1,7 @@
 // my-app/backend/seed/seedData.js
 import mongoose from "mongoose";
-import "dotenv/config"; // Load environment variables from backend/.env
+import dotenv from "dotenv";
+dotenv.config(); // Load environment variables from backend/.env
 import Billing from "../models/Billing.js"; // Path corrected to point to backend/models
 import Complaint from "../models/Complaint.js";
 import Booking from "../models/Booking.js";
