@@ -11,7 +11,7 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: "https://aetheria-an-ml-powered-society-vy4m.onrender.com", // Point this to your actual backend port
+        target: "http://localhost:5000", // Point this to your actual backend port
         changeOrigin: true,
       },
     },
